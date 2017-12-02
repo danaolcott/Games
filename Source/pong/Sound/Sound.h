@@ -30,12 +30,13 @@ typedef struct
 
 
 //sound arrays
-extern const SoundData sound_sinewave;
 extern const SoundData sound_droppedball;
-extern const SoundData sound_gameover;
-extern const SoundData sound_levelup;
-extern const SoundData sound_playerbounce;
-extern const SoundData sound_wallbounce;
+extern const SoundData sound_gameover;			//ok
+extern const SoundData sound_levelup;			//ok
+extern const SoundData sound_playerbounce;		//ok
+extern const SoundData sound_wallbounce;		//ok
+extern const SoundData sound_tilebounce;		//ok
+
 
 
 
@@ -43,13 +44,12 @@ extern const SoundData sound_wallbounce;
 void Sound_Init(void);				//main
 void Sound_InterruptHandler(void);	//main
 
-void Sound_Play_Sinewave(void);		//anywhere
 void Sound_Play_DroppedBall(void);
 void Sound_Play_GameOver(void);
 void Sound_Play_LevelUp(void);
 void Sound_Play_PlayerBounce(void);
 void Sound_Play_WallBounce(void);
-
+void Sound_Play_TileBounce(void);
 
 
 #endif

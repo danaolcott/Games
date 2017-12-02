@@ -73,19 +73,19 @@ void Sprite_DisplayDroppedBall(void)
 	{
 		LCD_SetTextLineColor(WHITE);
 		uint8_t buffer = Sprite_GetActiveDisplayBuffer();
-		LCD_DrawString(buffer, 5, "Dropped Ball");
+		LCD_DrawString(buffer, 8, " Dropped Ball");
 		HAL_Delay(1000);
 
 		LCD_SetTextLineColor(BLUE);
-		LCD_DrawString(buffer, 5, "Dropped Ball");
+		LCD_DrawString(buffer, 8, " Dropped Ball");
 		HAL_Delay(1000);
 
 		LCD_SetTextLineColor(WHITE);
-		LCD_DrawString(buffer, 5, "Dropped Ball");
+		LCD_DrawString(buffer, 8, " Dropped Ball");
 		HAL_Delay(1000);
 
 		LCD_SetTextLineColor(BLUE);
-		LCD_DrawString(buffer, 5, "Dropped Ball");
+		LCD_DrawString(buffer, 8, " Dropped Ball");
 		HAL_Delay(1000);
 
 		LCD_SetTextLineColor(WHITE);
@@ -102,19 +102,19 @@ void Sprite_DisplayGameOver(void)
 {
 	LCD_SetTextLineColor(WHITE);
 	uint8_t buffer = Sprite_GetActiveDisplayBuffer();
-	LCD_DrawString(buffer, 5, "Game Over");
+	LCD_DrawString(buffer, 8, "   Game Over");
 	HAL_Delay(1000);
 
 	LCD_SetTextLineColor(BLUE);
-	LCD_DrawString(buffer, 5, "Game Over");
+	LCD_DrawString(buffer, 8, "   Game Over");
 	HAL_Delay(1000);
 
 	LCD_SetTextLineColor(WHITE);
-	LCD_DrawString(buffer, 5, "Game Over");
+	LCD_DrawString(buffer, 8, "   Game Over");
 	HAL_Delay(1000);
 
 	LCD_SetTextLineColor(BLUE);
-	LCD_DrawString(buffer, 5, "Game Over");
+	LCD_DrawString(buffer, 8, "   Game Over");
 	HAL_Delay(1000);
 
 	LCD_SetTextLineColor(WHITE);
@@ -125,12 +125,12 @@ void Sprite_DisplayGameStart(void)
 {
 	uint8_t buffer = Sprite_GetActiveDisplayBuffer();
 	LCD_SetTextLineColor(WHITE);
-	LCD_DrawString(buffer, 5, "Press Start");
+	LCD_DrawString(buffer, 8, "  Press Start");
 
 	HAL_Delay(1000);
 
 	LCD_SetTextLineColor(BLUE);
-	LCD_DrawString(buffer, 5, "Press Start");
+	LCD_DrawString(buffer, 8, "  Press Start");
 
 
 	HAL_Delay(1000);
@@ -379,13 +379,13 @@ void Sprite_Ball_Move(void)
 		spriteGameScore += mTile[tileIndex].points;
 
 		//play sound
-		Sound_Play_PlayerBounce();
+		Sound_Play_TileBounce();
 	}
 
 	//hit a wall
 	else if (flagBoundary == 1)
 	{
-		Sound_Play_PlayerBounce();
+		Sound_Play_WallBounce();
 	}
 
 	//compute new x and y position from updated

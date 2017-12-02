@@ -26,7 +26,7 @@ Sprite header file
 #define SCREEN_LEFT		8
 #define SCREEN_RIGHT	231
 
-#define PLAYER_NUM_PLAYERS	5
+#define PLAYER_NUM_PLAYERS	2
 #define PLAYER_DEFAULT_X	100
 #define PLAYER_DEFAULT_Y	290
 

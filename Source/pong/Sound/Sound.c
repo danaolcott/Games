@@ -71,10 +71,6 @@ void Sound_PlaySound(const SoundData *sound)
 
 
 
-void Sound_Play_Sinewave(void)
-{
-	Sound_PlaySound(&sound_sinewave);
-}
 
 void Sound_Play_DroppedBall(void)
 {
@@ -101,4 +97,8 @@ void Sound_Play_WallBounce(void)
 	Sound_PlaySound(&sound_wallbounce);
 }
 
+void Sound_Play_TileBounce(void)
+{
+	Sound_PlaySound(&sound_tilebounce);
+}
 

@@ -161,11 +161,15 @@ int main(void)
 		Sprite_Player_Move();
 		Sprite_Draw();
 
-
-		//did we drop a ball and it's our last player
+		//did we drop a ball
 		if(Sprite_GetBallMissedFlag() == 1)
 		{
-			//play a sound....
+			//if not last player - play sound, else, it plays on game over
+			if (Sprite_GetNumPlayers() > 1)
+			{
+				Sound_Play_DroppedBall();
+				HAL_Delay(2000);
+			}
 
 			Sprite_ClearBallMissedFlag();
 			Sprite_DisplayDroppedBall();		//decrement player
@@ -175,6 +179,10 @@ int main(void)
 		//any players remaining?
 		if (!Sprite_GetNumPlayers())
 		{
+			//game over
+			Sound_Play_GameOver();
+			HAL_Delay(2000);
+
 			Sprite_DisplayGameOver();
 
 			while (!HAL_GPIO_ReadPin(UserButtonBlue_GPIO_Port, UserButtonBlue_Pin))
@@ -187,7 +195,7 @@ int main(void)
 		//all tiles gone, increment the game level
 		if (!Sprite_GetNumTiles())
 		{
-			Sound_Play_Sinewave();
+			Sound_Play_LevelUp();
 
 			HAL_Delay(1000);
 
@@ -206,9 +214,12 @@ int main(void)
 			Sprite_GameMode_ToggleMode();
 		}
 
+		if (!(gameTick % 100))
+			HAL_GPIO_TogglePin(LED_Green_GPIO_Port, LED_Green_Pin);
 
 		gameTick++;
-		HAL_GPIO_TogglePin(LED_Green_GPIO_Port, LED_Green_Pin);
+
+
 		HAL_Delay(10);
 
 
