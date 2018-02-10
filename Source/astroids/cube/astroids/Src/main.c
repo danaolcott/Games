@@ -198,7 +198,6 @@ int main(void)
 
 		Sprite_UpdateDisplay();
 
-
 		///////////////////////////////////////////
 		//Make a random shift in astroid trajectory
 		//

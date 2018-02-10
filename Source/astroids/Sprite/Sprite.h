@@ -22,24 +22,24 @@ and astroid sprites.
 
 /////////////////////////////////////////
 //defines
-#define NUM_ASTROID				12
-#define ASTROID_IMAGE_PADDING	2
+#define NUM_ASTROID				12			//num astroids in the game
+#define ASTROID_IMAGE_PADDING	2			//padding for eval hit/miss
 
-#define PLAYER_DEFAULT_LIVES    5
+#define PLAYER_DEFAULT_LIVES    5			//player
 #define PLAYER_DEFAULT_X        120
 #define PLAYER_DEFAULT_Y        160
 
 #define NUM_MISSILE    8
 #define MISSILE_SIZE	6
 
-#define SPRITE_MAX_X        239
+#define SPRITE_MAX_X        239				//game area
 #define SPRITE_MIN_X        0
 #define SPRITE_MAX_Y        319
 #define SPRITE_MIN_Y        0
 
 #define SPRITE_BACKGROUND_COLOR		BLUE
 
-#define SPRITE_THRUSTER_TIMEOUT_VALUE		50
+#define SPRITE_THRUSTER_TIMEOUT_VALUE		50		//engine run timeout
 
 /////////////////////////////////////////
 //Direction enum
@@ -70,9 +70,8 @@ typedef enum
 
 
 ///////////////////////////////////////////
-//Bearing.  Run these all on mod 11 for
-//about 5 deg.  static counter in the get
-//dx dy functions.
+//Bearing.  Used for astroids, 5 deg increments
+//offset evaluated on % 11 to get dx/dy
 //
 typedef enum
 {
@@ -97,7 +96,6 @@ typedef enum
 	ASTROID_SIZE_SMALL,
 	ASTROID_SIZE_MEDIUM,
 	ASTROID_SIZE_LARGE,
-
 }AstroidSize_t;
 
 
@@ -115,8 +113,7 @@ typedef enum
 
 ////////////////////////////////////////
 //Player Definition
-//image pointer will likely change based
-//on rotation.
+//
 typedef struct
 {
 	uint8_t numLives;
@@ -135,6 +132,7 @@ typedef struct
 
 ///////////////////////////////////////
 //Astroid Defintion
+//
 typedef struct
 {
 	uint8_t life;
@@ -231,11 +229,9 @@ void Sprite_PlayerRotateCCW(void);
 void Sprite_PlayerSetRotation(SpriteDirection_t rotation);
 SpriteDirection_t Sprite_PlayerGetRotation(void);
 
-
 void Sprite_PlayerFireThruster(void);
 void Sprite_PlayerSetDirection(SpriteDirection_t direction);
 SpriteDirection_t Sprite_PlayerGetDirection(void);
-
 
 void Sprite_PlayerSetThursterFlag(void);
 uint8_t Sprite_PlayerGetThrusterFlag(void);
@@ -244,8 +240,6 @@ void Sprite_PlayerClearThrusterFlag(void);
 void Sprite_PlayerSetSpecialEventFlag(void);
 uint8_t Sprite_PlayerGetSpecialEventFlag(void);
 void Sprite_PlayerClearSpecialEventFlag(void);
-
-
 
 
 #endif

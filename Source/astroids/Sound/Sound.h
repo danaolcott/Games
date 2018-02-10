@@ -44,6 +44,7 @@ extern const SoundData sound_levelup;			//ok
 extern const SoundData sound_shootPlayer;
 extern const SoundData sound_shootEnemy;
 extern const SoundData sound_explodePlayer;
+extern const SoundData sound_thruster;
 
 
 void Sound_Init(void);                  //main
@@ -55,6 +56,8 @@ void Sound_Play_PlayerExplode(void);
 void Sound_Play_EnemyExplode(void);
 void Sound_Play_GameOver(void);
 void Sound_Play_LevelUp(void);
+
+void Sound_Play_Thruster(void);
 
 
 #endif

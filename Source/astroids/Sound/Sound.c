@@ -101,3 +101,7 @@ void Sound_Play_LevelUp(void)
 	Sound_PlaySound(&sound_levelup);
 }
 
+void Sound_Play_Thruster(void)
+{
+	Sound_PlaySound(&sound_thruster);
+}

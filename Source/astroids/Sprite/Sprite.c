@@ -1,16 +1,23 @@
 /*
 /////////////////////////////////////////////////
-Sprite Files
-Provides control and access to the sprites in the system.
-Main sprites include the following:
-Player - single player that moves in x direction
-Enemy - moves left and right, drops down one row each time
-missile - moves up or down depending on who's shooting the missile
+Sprite Controller File
+Dana Olcott 2/2018
 
-image names:
-imagePlayer - 24x10
-imageEnemy - 16x16
-imageMissile - 8 x 8
+Function definitions for all sprite control functions.
+Main sprites in the program consist of:
+
+Player - Move, rotate, and fire
+Missle - Move, hit, remove astroids on impact
+Astroids - Move, when hit by missile, removed
+
+Player - 48x48 image captured at various rotation angles
+Missle - A simple block to draw
+Astroids - 30x30 image
+
+Player and astroids wrap to other side of the screen
+if it goes off the LCD.
+
+Hopefully the functions are not too messed up to follow.
 
 /////////////////////////////////////////////////////////
 */
@@ -34,13 +41,10 @@ static MissileStruct mMissile[NUM_MISSILE];
 static uint8_t mMissileLaunchFlag;			//missile launch
 static uint8_t mPlayerRotateCWFlag;			//rotate player clockwise
 static uint8_t mPlayerRotateCCWFlag;		//rotate player clockwise
-
 static uint8_t mPlayerThrustFlag;			//fire thrusters
 static uint8_t mPlayerSpecialEventFlag;		//special event flag
 
-
-
-static uint8_t mActiveDisplayLayer;
+static uint8_t mActiveDisplayLayer;			//flip btw 2 layers for drawing
 
 
 ///////////////////////////////////////////
@@ -65,11 +69,16 @@ void Sprite_Init(void)
 	uint32_t tempLeft = rand() % (79 + 1 - 0) + 0;
 	uint32_t tempRight = rand() % (200 + 1 - 160) + 160;
 
+	//init flags
+    mMissileLaunchFlag = 0x00;			//missile launch
+    mPlayerRotateCWFlag = 0x00;			//rotate player clockwise
+    mPlayerRotateCCWFlag = 0x00;		//rotate player clockwise
+    mPlayerThrustFlag = 0x00;			//fire thrusters
+    mPlayerSpecialEventFlag = 0x00;		//special event flag
 
-    mMissileLaunchFlag = 0x00;
-    mActiveDisplayLayer = 0x00;
+    mActiveDisplayLayer = 0x00;			//initial display layer
 
-    Sprite_Player_Init();
+    Sprite_Player_Init();				//init sprites
     Sprite_Astroid_Init();
     Sprite_Missile_Init();
 }
@@ -98,29 +107,31 @@ void Sprite_Player_Init(void)
 }
 
 
-///////////////////////////////////////
-//put half the rocks on one side, half
-//on the other.  Randomize the x offsets
-//within a range on either side
-//how about 1/3, 0-80 and 120 - 240
+////////////////////////////////////////////////
+//Astroid init
+//Sets up the mAstroid array with 1/2 of the
+//astroids on one side of the screen and 1/2 on
+//the other.  Offset left and right are random
+//they start out moving up and down, but the
+//directions get altered in the main loop.
 //
 void Sprite_Astroid_Init(void)
 {
     uint8_t count = 0;
     for (int i = 0 ; i < NUM_ASTROID / 2 ; i++)
     {
-    	uint32_t left = rand() % (39 + 1 - 0) + 0;
-    	uint32_t offset = rand() % (19 + 1 - 10) + 10;
+    	uint32_t left = rand() % (39 + 1 - 0) + 0;			//random offset
+    	uint32_t offset = rand() % (19 + 1 - 10) + 10;		//random offset
 
 		mAstroid[count].life = 1;                           //life - 1 = alive, 0 = dead
 		mAstroid[count].image = &imgTile;             		//pointer to image data
 		mAstroid[count].points = 30;                        //points
 		mAstroid[count].x = left;              				//x position
-		mAstroid[count].y = i * (imgTile.ySize + offset); 		//y position
+		mAstroid[count].y = i * (imgTile.ySize + offset); 	//y position
 		mAstroid[count].sizeX = imgTile.xSize;        		//image width
 		mAstroid[count].sizeY = imgTile.ySize;        		//image height
 		mAstroid[count].bearing = BEARING_0;   				//initial direction
-		mAstroid[count].speed = SPRITE_SPEED_SLOW;
+		mAstroid[count].speed = SPRITE_SPEED_SLOW;			//initial speed
 		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
 
 		count++;
@@ -128,18 +139,18 @@ void Sprite_Astroid_Init(void)
 
     for (int i = 0; i < NUM_ASTROID / 2 ; i++)
     {
-    	uint32_t right = rand() % (200 + 1 - 160) + 160;
-    	uint32_t offset = rand() % (19 + 1 - 10) + 10;
+    	uint32_t right = rand() % (200 + 1 - 160) + 160;	//random offset
+    	uint32_t offset = rand() % (19 + 1 - 10) + 10;		//random offset
 
 		mAstroid[count].life = 1;                           //life - 1 = alive, 0 = dead
 		mAstroid[count].image = &imgTile;             		//pointer to image data
 		mAstroid[count].points = 30;                        //points
-		mAstroid[count].x = right;              				//x position
-		mAstroid[count].y = i * (imgTile.ySize + offset); 		//y position
+		mAstroid[count].x = right;              			//x position
+		mAstroid[count].y = i * (imgTile.ySize + offset); 	//y position
 		mAstroid[count].sizeX = imgTile.xSize;        		//image width
 		mAstroid[count].sizeY = imgTile.ySize;        		//image height
-		mAstroid[count].bearing = BEARING_180;   				//initial direction
-		mAstroid[count].speed = SPRITE_SPEED_SLOW;
+		mAstroid[count].bearing = BEARING_180;   			//initial direction
+		mAstroid[count].speed = SPRITE_SPEED_SLOW;			//initial speed
 		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
 
 		count++;
@@ -148,8 +159,10 @@ void Sprite_Astroid_Init(void)
 
 
 ///////////////////////////////////////
-//init the missile arrays for player and 
-//enemy missiles
+//Missile Init
+//Setup the missile array with initial
+//position, speed, directin, etc.
+//
 void Sprite_Missile_Init(void)
 {
     for (int i = 0 ; i < NUM_MISSILE ; i++)
@@ -160,7 +173,6 @@ void Sprite_Missile_Init(void)
         mMissile[i].size = 10;
         mMissile[i].direction = SPRITE_DIRECTION_0;		//should be heading of player
         mMissile[i].speed = SPRITE_SPEED_STOP;
-
     }
 }
 
@@ -251,10 +263,11 @@ void Sprite_Player_Move(void)
 
 }
 
-/////////////////////////////////////
+/////////////////////////////////////////////////////
 //Astroid Move
 //Loop over all astroid.  If the life == 1,
-//move the astroid based on speed and direction.
+//move the astroid based on speed and bearing.
+//
 //
 void Sprite_Astroid_Move(void)
 {
@@ -267,23 +280,31 @@ void Sprite_Astroid_Move(void)
 			dx = Sprite_GetDX_FromBearing(mAstroid[i].bearing, mAstroid[i].speed);
 			dy = Sprite_GetDY_FromBearing(mAstroid[i].bearing, mAstroid[i].speed);
 
+			//////////////////////////////////////////////////
 			//x-direction
-			if ((dx  >  0) && ((mAstroid[i].x + dx) < (LCD_WIDTH - 1)))
+			if ((dx  >  0) && ((mAstroid[i].x + dx) <= (LCD_WIDTH - 1)))
 				mAstroid[i].x += dx;
 
 			//moving right, wrap
-			else if ((dx  >  0) && ((mAstroid[i].x + dx) >= (LCD_WIDTH - 1)))
+			else if ((dx  >  0) && ((mAstroid[i].x + dx) > (LCD_WIDTH - 1)))
 				mAstroid[i].x = (mAstroid[i].x + dx) - LCD_WIDTH;
 
-			//moving left - no wrap
-			else if ((dx  <  0) && ((mAstroid[i].x - dx) > 0 ))
-				mAstroid[i].x -= (-1 * dx);
+			//moving left
+			else if (dx < 0)
+			{
+				uint32_t delta = (uint32_t)(-1 * dx);
 
-			//moving left - wrap
-			else if ((dx  <  0) && (((-1*dx) > mAstroid[i].x)))
-				mAstroid[i].x = LCD_WIDTH - 1 - (-1 * dx);
+				//moving left, no wrap
+				if (mAstroid[i].x >= delta)
+					mAstroid[i].x -= delta;
+				else
+				{
+					mAstroid[i].x = LCD_WIDTH - 1 - delta;
+				}
+			}
 
 
+			//////////////////////////////////////////////////
 			//y-direction
 			//moving down, no wrap
 			if ((dy  >  0) && ((mAstroid[i].y < (LCD_HEIGHT -1))))
@@ -342,7 +363,6 @@ void Sprite_Missile_Move(void)
         			mMissile[i].speed = SPRITE_SPEED_STOP;
         			mMissile[i].direction = SPRITE_DIRECTION_0;
         		}
-
         	}
 
         	//positive dx - moving right
@@ -377,7 +397,6 @@ void Sprite_Missile_Move(void)
 					mMissile[i].speed = SPRITE_SPEED_STOP;
 					mMissile[i].direction = SPRITE_DIRECTION_0;
 				}
-
 			}
 
 			//positive dy - moving down or nothing
@@ -577,23 +596,23 @@ int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 	//set the dx from direction
 	switch(rotation)
 	{
-		case SPRITE_DIRECTION_0:	dx =  mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_26:	dx =  mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_45:	dx =  mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_63:	dx =  mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_90:	dx =  mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_116:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_135:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_153:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_180:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_206:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_225:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_243:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_270:	dx = mPlayer.sizeX / 2;	break;
-		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_315:	dx = mPlayer.sizeX + offset;	break;
-		case SPRITE_DIRECTION_333:	dx = mPlayer.sizeX + offset;	break;
-		default:					dx = mPlayer.sizeX + offset;	break;
+		case SPRITE_DIRECTION_0:	dx =  mPlayer.sizeX;				break;
+		case SPRITE_DIRECTION_26:	dx =  mPlayer.sizeX + offset;		break;
+		case SPRITE_DIRECTION_45:	dx =  mPlayer.sizeX;				break;
+		case SPRITE_DIRECTION_63:	dx =  mPlayer.sizeX /2 + offset;	break;
+		case SPRITE_DIRECTION_90:	dx =  mPlayer.sizeX /2;				break;
+		case SPRITE_DIRECTION_116:	dx = offset;						break;
+		case SPRITE_DIRECTION_135:	dx = offset;						break;
+		case SPRITE_DIRECTION_153:	dx = -1 * offset;					break;
+		case SPRITE_DIRECTION_180:	dx = -1 * offset;					break;
+		case SPRITE_DIRECTION_206:	dx = -1 * offset / 2;				break;
+		case SPRITE_DIRECTION_225:	dx = -1 * offset;					break;
+		case SPRITE_DIRECTION_243:	dx = 0;								break;
+		case SPRITE_DIRECTION_270:	dx = mPlayer.sizeX / 2;				break;
+		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX - offset;		break;
+		case SPRITE_DIRECTION_315:	dx = mPlayer.sizeX - offset;		break;
+		case SPRITE_DIRECTION_333:	dx = mPlayer.sizeX;					break;
+		default:					dx = 0;								break;
 	}
 
 	return dx;
@@ -623,23 +642,23 @@ int Sprite_Missile_YOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 	//set the dx from direction
 	switch(rotation)
 	{
-		case SPRITE_DIRECTION_0:	dy =  mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_26:	dy =  mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_45:	dy =  mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_63:	dy =  offset;	break;
-		case SPRITE_DIRECTION_90:	dy =  -1 * offset;	break;
-		case SPRITE_DIRECTION_116:	dy =  -1 * offset;	break;
-		case SPRITE_DIRECTION_135:	dy =  -1 * offset;	break;
-		case SPRITE_DIRECTION_153:	dy =  -1 * offset;	break;
-		case SPRITE_DIRECTION_180:	dy =  mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_206:	dy = mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_243:	dy = mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_270:	dy = mPlayer.sizeY;	break;
-		case SPRITE_DIRECTION_296:	dy = mPlayer.sizeY;	break;
-		case SPRITE_DIRECTION_315:	dy = mPlayer.sizeY / 2;	break;
-		case SPRITE_DIRECTION_333:	dy = mPlayer.sizeY / 2;	break;
-		default:					dy = mPlayer.sizeY / 2;	break;
+		case SPRITE_DIRECTION_0:	dy =  mPlayer.sizeY / 2;			break;
+		case SPRITE_DIRECTION_26:	dy =  mPlayer.sizeY / 4;			break;
+		case SPRITE_DIRECTION_45:	dy =  0;							break;
+		case SPRITE_DIRECTION_63:	dy =  -1 * offset;					break;
+		case SPRITE_DIRECTION_90:	dy =  -1 * offset;					break;
+		case SPRITE_DIRECTION_116:	dy =  -1 * offset;					break;
+		case SPRITE_DIRECTION_135:	dy =  -1 * offset;					break;
+		case SPRITE_DIRECTION_153:	dy =   0;							break;
+		case SPRITE_DIRECTION_180:	dy =  mPlayer.sizeY / 2;			break;
+		case SPRITE_DIRECTION_206:	dy = mPlayer.sizeY / 2;				break;
+		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY;					break;
+		case SPRITE_DIRECTION_243:	dy = mPlayer.sizeY;					break;
+		case SPRITE_DIRECTION_270:	dy = mPlayer.sizeY;					break;
+		case SPRITE_DIRECTION_296:	dy = mPlayer.sizeY;					break;
+		case SPRITE_DIRECTION_315:	dy = mPlayer.sizeY - offset;		break;
+		case SPRITE_DIRECTION_333:	dy = (mPlayer.sizeY / 2) + offset;	break;
+		default:					dy = 0;								break;
 	}
 
 	return dy;
@@ -654,12 +673,15 @@ int Sprite_Missile_YOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 
 
 
-
+////////////////////////////////////
+//Get remaining number of players
 uint8_t Sprite_GetNumPlayers(void)
 {
     return mPlayer.numLives;
 }
 
+////////////////////////////////////
+//Get number of live astroids
 int Sprite_GetNumAstroid(void)
 {
     int num = 0;
@@ -676,8 +698,7 @@ int Sprite_GetNumAstroid(void)
 ///////////////////////////////////////////////
 //GetRandomAstroid
 //Returns the index of a randomly selected
-//astroid from a collection of Live astroids.
-//ie, only pulls from those remaining.
+//astroid from a collection of live astroids.
 //
 int Sprite_GetRandomAstroid(void)
 {
@@ -687,9 +708,7 @@ int Sprite_GetRandomAstroid(void)
     {
         //get the random index
         //rand() % (max_number + 1 - minimum_number) + minimum_number
-        //index is the count within a set of live astroids.  loop over
-    	//array, incrementing counter until count = index
-    	//ie, 0 = first live, 1 = second live... etc
+        //index is the count within a set of live astroids.
         int index = rand() % (num - 1 + 1 - 0) + 0;
         int counter = 0;
 
@@ -714,7 +733,6 @@ int Sprite_GetRandomAstroid(void)
 //randomly move increase or decrease in bearing
 //offset from true/vertical.  Keep in range
 //
-//
 int Sprite_WormHole(void)
 {
 	int index = Sprite_GetRandomAstroid();
@@ -725,8 +743,7 @@ int Sprite_WormHole(void)
 	{
 		Bearing_t bearing = mAstroid[index].bearing;
 
-		//shift left or right based on random shift 1 or 2
-		//1 = clockwise
+		//bearing shift clockwise or ccw based on shift
 		if (shift == 1)
 		{
 			switch (bearing)
@@ -736,13 +753,11 @@ int Sprite_WormHole(void)
 				case BEARING_10: 	mAstroid[index].bearing = BEARING_5;		break;
 				case BEARING_355: 	mAstroid[index].bearing = BEARING_0;		break;
 				case BEARING_350: 	mAstroid[index].bearing = BEARING_355;		break;
-
 				case BEARING_170: 	mAstroid[index].bearing = BEARING_175;		break;
 				case BEARING_175: 	mAstroid[index].bearing = BEARING_180;		break;
 				case BEARING_180: 	mAstroid[index].bearing = BEARING_185;		break;
 				case BEARING_185: 	mAstroid[index].bearing = BEARING_190;		break;
 				case BEARING_190: 	mAstroid[index].bearing = BEARING_185;		break;
-
 				//represents an error, so make it obvious
 				default:			mAstroid[index].bearing = BEARING_180;		break;
 			}
@@ -762,7 +777,6 @@ int Sprite_WormHole(void)
 				case BEARING_180: 	mAstroid[index].bearing = BEARING_175;		break;
 				case BEARING_185: 	mAstroid[index].bearing = BEARING_180;		break;
 				case BEARING_190: 	mAstroid[index].bearing = BEARING_185;		break;
-
 				//represents an error, so make it obvious
 				default:			mAstroid[index].bearing = BEARING_0;		break;
 			}
@@ -772,10 +786,11 @@ int Sprite_WormHole(void)
 	return index;
 }
 
-///////////////////////////////////
-//Grab next available display layer,
-//clear it, draw items into it,
-//flip the display layer
+/////////////////////////////////////////////////////
+//Update the display.
+//Get the next available display layer (one not
+//being currently displayed), clear it, draw items on
+//it, and flip as active display layer
 //
 void Sprite_UpdateDisplay(void)
 {
@@ -789,13 +804,14 @@ void Sprite_UpdateDisplay(void)
 	Sprite_Missle_Draw(nextLayer);			//draw missiles
 
 	LCD_SetDisplayLayer0(nextLayer);
-
 }
 
-///////////////////////////////////////
-//Get Active Display Layer -
-//returns the next available display layer
-//does not set it as the active layer
+////////////////////////////////////////////////
+//Get Next Active Display Layer
+//Sets and returns the active layer.
+//See Sprite_SetActiveDisplayLayer to point
+//LCD at the layer.
+//
 uint8_t Sprite_GetNextDisplayLayer(void)
 {
 	if (!mActiveDisplayLayer)
@@ -804,16 +820,15 @@ uint8_t Sprite_GetNextDisplayLayer(void)
 		mActiveDisplayLayer = 0;
 
 	return mActiveDisplayLayer;
-
 }
 
 
 
-/////////////////////////////////////////////
+///////////////////////////////////////////////
 //Sprite_SetActiveDisplayLayer
 //Set the active display layer on LCD
-//Layer 0.  Points to appropriate location
-//in SDRAM
+//Layer 0.  Points the LCD framebuffer to
+//appropriate address in SDRAM
 //
 void Sprite_SetActiveDisplayLayer(uint8_t layer)
 {
@@ -822,9 +837,14 @@ void Sprite_SetActiveDisplayLayer(uint8_t layer)
 
 
 /////////////////////////////////////////////
-//Draw the player icon at the player
-//x and y position.  Do this only
-//if the num lives are > 0
+//Draw the player icon at the player x,y
+//position.  Transparent color arg (in this
+//case black) is based on the background of the
+//player image.  Set to an obscure value if
+//one does not want to use transparent color.
+//Transparent color is not drawn.  (ie, pointer
+//simply skips over it).
+//
 void Sprite_Player_Draw(uint8_t layer)
 {
     if (mPlayer.numLives > 0)
@@ -834,8 +854,8 @@ void Sprite_Player_Draw(uint8_t layer)
 }
 
 ////////////////////////////////////////////
-//Loop through Astroid array and draw those
-//that are life = 1
+//Draw Astroid
+//Draw all astroids with life = 1
 //
 void Sprite_Astroid_Draw(uint8_t layer)
 {
@@ -850,9 +870,12 @@ void Sprite_Astroid_Draw(uint8_t layer)
 
 
 
-///////////////////////////////////////
-//Draw the player missile array and the 
-//enemy missile array 
+/////////////////////////////////////////////////
+//Draw Missile.
+//Draw all inflight missiles.  Missile is represented
+//by a red box
+//TODO: implement draw circle function
+//
 void Sprite_Missle_Draw(uint8_t layer)
 {
     for (int i = 0 ; i < NUM_MISSILE ; i++)
@@ -868,7 +891,9 @@ void Sprite_Missle_Draw(uint8_t layer)
 
 ////////////////////////////////////////////
 //Helper - Get dX from direction and speed
-//All dx and dy based on 2 pixel delta.
+//All dx and dy based on 2 pixel minimum delta.
+//ie, 45 deg angle is 2 pixels up and 2 over
+//for a multiplier of 1
 //
 int Sprite_GetDX_FromDirection(SpriteDirection_t direction, SpriteSpeed_t speed)
 {
@@ -914,6 +939,10 @@ int Sprite_GetDX_FromDirection(SpriteDirection_t direction, SpriteSpeed_t speed)
 
 /////////////////////////////////////////////
 //Helper - Get dY from direction and speed
+//All dy base on 2 pixel minimum delta.
+//ie, 45 deg angle is 2 up and 2 over for a
+//multiplier of 1.
+//
 int Sprite_GetDY_FromDirection(SpriteDirection_t direction, SpriteSpeed_t speed)
 {
 	int multiplier = 0x00;
@@ -958,9 +987,10 @@ int Sprite_GetDY_FromDirection(SpriteDirection_t direction, SpriteSpeed_t speed)
 
 
 //////////////////////////////////////////////////////////
-//Dx from Bearing.  Purpose is for small changes
-//in dx, dy for small offsets from vertical.  Applicable
-//to the astroid movements.
+//Get DX from Bearing.
+//Used for computing movements to astroid array.
+//Increment is 5 degrees and evaluated every 11 game
+//cycles. ie, tan -1 (1/11) about 5 deg.
 //
 int Sprite_GetDX_FromBearing(Bearing_t bearing, SpriteSpeed_t speed)
 {
@@ -1010,10 +1040,12 @@ int Sprite_GetDX_FromBearing(Bearing_t bearing, SpriteSpeed_t speed)
 
 
 //////////////////////////////////////////////////////////
-//Applicable to astroid movements since these
-//are restricted to within 10 deg of vertical.
-//dy from bearing.  targets vertically oriented directions
-//runs on a %11.  always returns 1 or -1 for vertical directions
+//Get DY from Bearing.
+//Used for computing movements to astroid array.
+//Increment is 5 degrees.  Restricted  to vertically
+//oriented movements.  y direction is therefore always
+//one pixel in the general direction.  x direction evaluated
+//every 11 cycles.
 //
 int Sprite_GetDY_FromBearing(Bearing_t bearing, SpriteSpeed_t speed)
 {
@@ -1032,7 +1064,7 @@ int Sprite_GetDY_FromBearing(Bearing_t bearing, SpriteSpeed_t speed)
 	}
 
 	//////////////////////////////////////
-	//set the dx from bearing
+	//set the dy from bearing
 	switch(bearing)
 	{
 		case BEARING_170:	dy =  1 * multiplier;	break;
@@ -1055,41 +1087,61 @@ int Sprite_GetDY_FromBearing(Bearing_t bearing, SpriteSpeed_t speed)
 
 
 /////////////////////////////////////////
-//player rotate flags
+//Player rotate flag = CW.  Called in
+//Joystick ADC conversion complete callback,
+//
 void Sprite_PlayerSetRotateCWFlag(void)
 {
 	mPlayerRotateCWFlag = 1;
 }
 
+/////////////////////////////////////////
+//Player rotate flag = CW.
+//return flag status
+//
 uint8_t Sprite_PlayerGetRotateCWFlag(void)
 {
 	return mPlayerRotateCWFlag;
 }
 
+/////////////////////////////////////////
+//Player rotate flag = CW.
+//Function called in the main loop.
 void Sprite_PlayerClearRotateCWFlag(void)
 {
 	mPlayerRotateCWFlag = 0;
 }
 
+/////////////////////////////////////////
+//Player rotate flag = CCW.  Called in
+//Joystick ADC conversion complete callback,
+//
 void Sprite_PlayerSetRotateCCWFlag(void)
 {
 	mPlayerRotateCCWFlag = 1;
 }
 
+/////////////////////////////////////////
+//Player rotate flag = CCW.
+//return flag status
+//
 uint8_t Sprite_PlayerGetRotateCCWFlag(void)
 {
 	return mPlayerRotateCCWFlag;
 }
 
+/////////////////////////////////////////
+//Player rotate flag = CCW.
+//Function called in main()
 void Sprite_PlayerClearRotateCCWFlag(void)
 {
 	mPlayerRotateCCWFlag = 0;
 }
 
 
-////////////////////////////////////////
-//rotate the player direction clockwise
-//and update the image pointer.
+/////////////////////////////////////////////
+//Rotate player CW and set the image pointer
+//
 void Sprite_PlayerRotateCW(void)
 {
 	SpriteDirection_t current = Sprite_PlayerGetRotation();
@@ -1122,6 +1174,9 @@ void Sprite_PlayerRotateCW(void)
 
 
 
+//////////////////////////////////////////////
+//Rotate player CCW and set the image pointer
+//
 void Sprite_PlayerRotateCCW(void)
 {
 	SpriteDirection_t current = Sprite_PlayerGetRotation();
@@ -1201,27 +1256,30 @@ SpriteDirection_t Sprite_PlayerGetRotation(void)
 
 
 /////////////////////////////////////////
-//Pulse thruster.  Increases the speed
-//of the player from 0 to slow.  No change
-//in other speeds for now.  Sets a gametick
-//timeout on player move.  This is stored inthe
-//player move function.  sets a thruster
-//on flag.
-
-//direction is changed only by firing thrusters.
+//Player Fire Thruster.
+//Increases player speed.  For now, only one
+//speed is implemented.  Sets a gametick
+//timeout on player move.  This is stored in the
+//player move function.  Sets a thruster
+//on flag that is evaluated in the main loop
+//
 void Sprite_PlayerFireThruster(void)
 {
-	//TODO: Add engine sounds
+	//play sound
+	Sound_Play_Thruster();
 
 	//enable thrusters and reset the timeout
 	//timeout counts down in player move function
+	//velocity decreases when thrustTimeout = 0
+	//
 	mPlayer.thrusterOn = 1;
 	mPlayer.thrustTimeout = SPRITE_THRUSTER_TIMEOUT_VALUE;
 
-	//set the direction and speed based on current speed and rotation
-	//simplify this to make it so that rotation matches the new direction
+	//TODO: Make this more detailed, allowing ship
+	//to slide in one direction with thrusters an other
+	//with direction set as average of the two.
+	//This is a simplification for now.
 
-	//adjust the speed
 	if (mPlayer.speed == SPRITE_SPEED_STOP)
 	{
 		mPlayer.speed = SPRITE_SPEED_SLOW;
@@ -1244,32 +1302,55 @@ SpriteDirection_t Sprite_PlayerGetDirection(void)
 
 
 
+///////////////////////////////////////
+//Set Thruster Flag
+//Called from ADC Conversion Complete callback
+//on a joystick event.  This flag is polled
+//in the main loop.
 void Sprite_PlayerSetThursterFlag(void)
 {
 	mPlayerThrustFlag = 1;
 }
 
+//////////////////////////////////////////
+//Get Thruster Flag
+//Polled in the main loop
 uint8_t Sprite_PlayerGetThrusterFlag(void)
 {
 	return mPlayerThrustFlag;
 }
 
+//////////////////////////////////////////
+//Clear Thruster Flag
+//Cleared in the main loop
 void Sprite_PlayerClearThrusterFlag(void)
 {
 	mPlayerThrustFlag = 0;
 }
 
+//////////////////////////////////////////
+//Special Event Flag
+//Function called in the ADC Conversion
+//Complete callback.  Special event is
+//called from a joystick back movement
+//it's supposed to represent the special
+//function in astroids (ie, rotate 180 deg,
+//shields, relocate...)
 void Sprite_PlayerSetSpecialEventFlag(void)
 {
 	mPlayerSpecialEventFlag = 1;
 }
 
+/////////////////////////////////////////////
+//Called in the main loop
 uint8_t Sprite_PlayerGetSpecialEventFlag(void)
 {
 	return mPlayerSpecialEventFlag;
 }
 
 
+///////////////////////////////////////////
+//Called in the main loop.
 void Sprite_PlayerClearSpecialEventFlag(void)
 {
 	mPlayerSpecialEventFlag = 0;
