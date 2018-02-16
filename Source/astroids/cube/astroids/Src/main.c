@@ -204,7 +204,9 @@ int main(void)
 				Sprite_DisplayGameOver();
 
 				val = HAL_GPIO_ReadPin(userButton_GPIO_Port, userButton_Pin);
+				HAL_GPIO_TogglePin(ledRed_GPIO_Port, ledRed_Pin);
 				HAL_Delay(200);
+
 			}
 
 			//val was high to get here.... reset the gameover
