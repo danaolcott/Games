@@ -463,7 +463,55 @@ void LCD_DrawBox(uint32_t layer, uint32_t x0, uint32_t y0, uint32_t sizeX, uint3
 	}
 }
 
-////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////
+//LCD_DrawCircle()
+//Draw a circle outline
+//Taken from the adafruit gfx library.
+//
+void LCD_DrawCircle(uint32_t layer, int32_t x0, int32_t y0, int32_t r, uint16_t color)
+{
+	int32_t f = 1 - r;
+	int32_t ddF_x = 1;
+	int32_t ddF_y = -2 * r;
+	int32_t x = 0;
+	int32_t y = r;
+
+	LCD_PutPixel(layer, x0   , y0+r, color);
+	LCD_PutPixel(layer, x0   , y0-r, color);
+	LCD_PutPixel(layer, x0+r , y0  , color);
+	LCD_PutPixel(layer, x0-r , y0  , color);
+
+	while (x<y)
+	{
+		if (f >= 0)
+		{
+			y--;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+
+		x++;
+		ddF_x += 2;
+		f += ddF_x;
+
+		LCD_PutPixel(layer, x0 + x, y0 + y, color);
+		LCD_PutPixel(layer, x0 - x, y0 + y, color);
+		LCD_PutPixel(layer, x0 + x, y0 - y, color);
+		LCD_PutPixel(layer, x0 - x, y0 - y, color);
+		LCD_PutPixel(layer, x0 + y, y0 + x, color);
+		LCD_PutPixel(layer, x0 - y, y0 + x, color);
+		LCD_PutPixel(layer, x0 + y, y0 - x, color);
+		LCD_PutPixel(layer, x0 - y, y0 - x, color);
+	}
+}
+
+
+
+
+
+///////////////////////////////////////////////////
 //LCD Text Functions
 void LCD_DrawChar(uint8_t layer, uint8_t row, uint8_t col, uint8_t letter)
 {
@@ -548,7 +596,6 @@ void LCD_DrawStringLength(uint8_t layer, uint8_t row, char output[], uint8_t len
 
 
 ///////////////////////////////////////////////
-//bitmaps
 //Draw bitmap
 //Was hoping to write whole values directly
 //to the lcd, but it's not going to work because
@@ -623,7 +670,6 @@ void LCD_DrawBitmapWrap(uint32_t layer, uint32_t x0, uint32_t y0, const ImageDat
 	const uint8_t *data = image->pImageData;
 	uint16_t color = 0x00;
 	uint32_t x, y;
-
 
 	///////////////////////////////////
 	//8 bit color

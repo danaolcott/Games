@@ -145,6 +145,10 @@ int main(void)
 	Sprite_Init();			//player, astroids, angry birds
 	Sound_Init();			//sounds, timers, etc
 
+
+	//Finally - Start the Game with GameOver Flag Set!!!
+	Sprite_SetGameOverFlag();
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -185,6 +189,30 @@ int main(void)
 		{
 			Sprite_Missile_Launch();
 			Sprite_ClearMissileLaunchFlag();
+		}
+
+		//////////////////////////////////////
+		//Game over flag
+		if (Sprite_GetGameOverFlag() == 1)
+		{
+			//read the user button press....
+			//press button results in high reading
+			uint8_t val = HAL_GPIO_ReadPin(userButton_GPIO_Port, userButton_Pin);
+
+			while (!val)
+			{
+				Sprite_DisplayGameOver();
+
+				val = HAL_GPIO_ReadPin(userButton_GPIO_Port, userButton_Pin);
+				HAL_Delay(200);
+			}
+
+			//val was high to get here.... reset the gameover
+			//flag and init the game
+			Sprite_ClearGameOverFlag();
+			Sprite_Init();
+
+
 		}
 
 

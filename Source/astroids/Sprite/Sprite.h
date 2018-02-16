@@ -184,6 +184,9 @@ void Sprite_ClearMissileLaunchFlag(void);
 
 int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex);
 
+int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex);
+
+
 int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteSpeed_t speed);
 int Sprite_Missile_YOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteSpeed_t speed);
 
@@ -200,6 +203,8 @@ int Sprite_WormHole(void);
 void Sprite_UpdateDisplay(void);
 uint8_t Sprite_GetNextDisplayLayer(void);
 void Sprite_SetDisplayLayer(uint8_t layer);
+
+void Sprite_DisplayGameOver(void);
 
 
 void Sprite_Player_Draw(uint8_t layer);
@@ -240,6 +245,11 @@ void Sprite_PlayerClearThrusterFlag(void);
 void Sprite_PlayerSetSpecialEventFlag(void);
 uint8_t Sprite_PlayerGetSpecialEventFlag(void);
 void Sprite_PlayerClearSpecialEventFlag(void);
+
+void Sprite_ClearGameOverFlag(void);
+void Sprite_SetGameOverFlag(void);
+uint8_t Sprite_GetGameOverFlag(void);
+
 
 
 #endif

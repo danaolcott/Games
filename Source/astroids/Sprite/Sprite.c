@@ -46,6 +46,9 @@ static uint8_t mPlayerSpecialEventFlag;		//special event flag
 
 static uint8_t mActiveDisplayLayer;			//flip btw 2 layers for drawing
 
+static uint32_t mGameScore;
+static uint8_t mGameOverFlag;
+
 
 ///////////////////////////////////////////
 //Local delay not linked to a timer
@@ -77,6 +80,10 @@ void Sprite_Init(void)
     mPlayerSpecialEventFlag = 0x00;		//special event flag
 
     mActiveDisplayLayer = 0x00;			//initial display layer
+
+    mGameScore = 0x00;
+    mGameOverFlag = 0x00;
+
 
     Sprite_Player_Init();				//init sprites
     Sprite_Astroid_Init();
@@ -272,6 +279,8 @@ void Sprite_Player_Move(void)
 void Sprite_Astroid_Move(void)
 {
 	int dx, dy;
+	uint32_t pX, pY, aTop, aBot, aLeft, aRight = 0x00;
+
 
 	for (int i = 0 ; i < NUM_ASTROID ; i++)
 	{
@@ -324,6 +333,39 @@ void Sprite_Astroid_Move(void)
 			//moving up - wrap
 			else if ((dy  <  0) && (!mAstroid[i].y))
 				mAstroid[i].y = LCD_HEIGHT - 1;
+
+
+			//Did the astroid hit the player?? - astroid index
+			//is i, mPlayer.  current index i is alive and already moved
+			//
+			//get the player x, y, ... etc.  Center of the astroid + padding?
+			//has to be in the edge of the player
+			//uint32_t pX, pY, aTop, aBot, aLeft, aRight = 0x00;
+			pX = mPlayer.x + mPlayer.sizeX / 2;
+			pY = mPlayer.y + mPlayer.sizeY / 2;
+
+			//center of the player has to be in the footprint of the astroid
+			aTop = mAstroid[i].y;
+			aBot = mAstroid[i].y + mAstroid[i].sizeY;
+			aLeft = mAstroid[i].x;
+			aRight = mAstroid[i].x + mAstroid[i].sizeX;
+
+			if ((pX >= aLeft) && (pX <= aRight) && (pY >= aTop) && (pY <= aBot))
+			{
+				//astroid hit player - remove a player and astroid
+				//play sound, increment score, etc.
+				//repositions the player
+				int rem = Sprite_Astroid_ScorePlayerHit(i);
+
+				//if !rem, all astroid is cleared and reset
+				if (!rem)
+				{
+					Sound_Play_LevelUp(); 	//play a sound
+					Sprite_Astroid_Init();  //reset the astroid
+				}
+
+			}
+
 
 		}
 	}
@@ -553,6 +595,8 @@ int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 {
 	Sound_Play_EnemyExplode();
 
+	mGameScore += mAstroid[astroidIndex].points;	//get points if you get hit
+
 	//remove astroid and set x and y 0
 	mAstroid[astroidIndex].life = 0;
 	mAstroid[astroidIndex].x = 0;
@@ -567,6 +611,53 @@ int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 
 	return rem;
 }
+
+
+//////////////////////////////////////////////////
+//Score - Astroid Hits Player
+//Remove one player life.
+//remove astroid.
+//play explosion and image sequence.
+//use dummy delay
+//set game over flag if it's the last player
+int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
+{
+	Sound_Play_PlayerExplode();
+
+	//show a sequence of images at player x and y
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan135Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan206Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+
+	//remove the astroid
+	mGameScore += mAstroid[astroidIndex].points;		//get points if you get hit
+	mAstroid[astroidIndex].life = 0;					//dead
+	mAstroid[astroidIndex].x = 0;						//default x
+	mAstroid[astroidIndex].y = 0;						//default y
+	mAstroid[astroidIndex].speed = SPRITE_SPEED_STOP;	//speed
+
+	//remove the player
+	mPlayer.numLives--;
+
+	//reset the position of the player
+	uint8_t lives = mPlayer.numLives;
+	Sprite_Player_Init();
+	mPlayer.numLives = lives;
+
+	//game over??
+	if (!mPlayer.numLives)
+		mGameOverFlag = 1;
+
+	int rem = Sprite_GetNumAstroid();
+	return rem;
+
+}
+
 
 
 
@@ -806,6 +897,8 @@ void Sprite_UpdateDisplay(void)
 	LCD_SetDisplayLayer0(nextLayer);
 }
 
+
+
 ////////////////////////////////////////////////
 //Get Next Active Display Layer
 //Sets and returns the active layer.
@@ -834,6 +927,23 @@ void Sprite_SetActiveDisplayLayer(uint8_t layer)
 {
 	LCD_SetDisplayLayer0(layer);
 }
+
+
+/////////////////////////////////////////////
+//Draws game over on the lcd
+//
+void Sprite_DisplayGameOver(void)
+{
+	uint8_t nextLayer = Sprite_GetNextDisplayLayer();
+
+	LCD_Clear(nextLayer, BLACK);
+	LCD_DrawString(nextLayer, 3, "  Press Button");
+	LCD_DrawString(nextLayer, 5, "    To Start");
+
+	LCD_SetDisplayLayer0(nextLayer);
+}
+
+
 
 
 /////////////////////////////////////////////
@@ -872,9 +982,7 @@ void Sprite_Astroid_Draw(uint8_t layer)
 
 /////////////////////////////////////////////////
 //Draw Missile.
-//Draw all inflight missiles.  Missile is represented
-//by a red box
-//TODO: implement draw circle function
+//Draw all inflight missiles - red circles
 //
 void Sprite_Missle_Draw(uint8_t layer)
 {
@@ -883,7 +991,7 @@ void Sprite_Missle_Draw(uint8_t layer)
         //check enemy missile
         if (mMissile[i].life == 1)
         {
-        	LCD_DrawBox(layer, mMissile[i].x, mMissile[i].y, mMissile[i].size, mMissile[i].size, RED);
+        	LCD_DrawCircle(layer, mMissile[i].x, mMissile[i].y, mMissile[i].size / 2, RED);
         }
     }
 }
@@ -1355,6 +1463,26 @@ void Sprite_PlayerClearSpecialEventFlag(void)
 {
 	mPlayerSpecialEventFlag = 0;
 }
+
+
+////////////////////////////////////////////
+//
+void Sprite_ClearGameOverFlag(void)
+{
+	mGameOverFlag = 0x00;
+}
+
+void Sprite_SetGameOverFlag(void)
+{
+	mGameOverFlag = 1;
+}
+
+uint8_t Sprite_GetGameOverFlag(void)
+{
+	return mGameOverFlag;
+}
+
+
 
 
 
