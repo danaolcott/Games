@@ -625,14 +625,21 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 	Sound_Play_PlayerExplode();
 
 	//show a sequence of images at player x and y
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan135Bmp, BLACK);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp0Bmp, BLACK);
 	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0Bmp, BLACK);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp1Bmp, BLACK);
 	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan206Bmp, BLACK);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp2Bmp, BLACK);
 	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0Bmp, BLACK);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp3Bmp, BLACK);
 	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp4Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp5Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp6Bmp, BLACK);
+	Sprite_DummyDelay(1000000);
+
 
 	//remove the astroid
 	mGameScore += mAstroid[astroidIndex].points;		//get points if you get hit

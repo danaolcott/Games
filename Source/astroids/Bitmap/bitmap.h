@@ -59,6 +59,14 @@ extern const ImageData bmvan296Bmp;
 extern const ImageData bmvan315Bmp;
 extern const ImageData bmvan333Bmp;
 
+//explosion
+extern const ImageData bmvan0_exp0Bmp;
+extern const ImageData bmvan0_exp1Bmp;
+extern const ImageData bmvan0_exp2Bmp;
+extern const ImageData bmvan0_exp3Bmp;
+extern const ImageData bmvan0_exp4Bmp;
+extern const ImageData bmvan0_exp5Bmp;
+extern const ImageData bmvan0_exp6Bmp;
 
 
 
