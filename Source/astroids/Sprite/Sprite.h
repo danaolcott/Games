@@ -169,7 +169,7 @@ void Sprite_DummyDelay(uint32_t delay);
 
 void Sprite_Init(void);
 void Sprite_Player_Init(void);
-void Sprite_Astroid_Init(void);
+void Sprite_Astroid_Init(SpriteSpeed_t speed);
 void Sprite_Missile_Init(void);
 
 void Sprite_Player_Move(void);
@@ -250,6 +250,8 @@ void Sprite_PlayerClearSpecialEventFlag(void);
 void Sprite_ClearGameOverFlag(void);
 void Sprite_SetGameOverFlag(void);
 uint8_t Sprite_GetGameOverFlag(void);
+
+SpriteSpeed_t Sprite_GetGameSpeedFromLevel(void);
 
 
 

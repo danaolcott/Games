@@ -89,7 +89,7 @@ void Sprite_Init(void)
 
 
     Sprite_Player_Init();				//init sprites
-    Sprite_Astroid_Init();
+    Sprite_Astroid_Init(SPRITE_SPEED_MEDIUM);
     Sprite_Missile_Init();
 }
 
@@ -125,7 +125,9 @@ void Sprite_Player_Init(void)
 //they start out moving up and down, but the
 //directions get altered in the main loop.
 //
-void Sprite_Astroid_Init(void)
+//initializes the astroids with an initial
+//speed
+void Sprite_Astroid_Init(SpriteSpeed_t speed)
 {
     uint8_t count = 0;
     for (int i = 0 ; i < NUM_ASTROID / 2 ; i++)
@@ -141,7 +143,7 @@ void Sprite_Astroid_Init(void)
 		mAstroid[count].sizeX = imgTile.xSize;        		//image width
 		mAstroid[count].sizeY = imgTile.ySize;        		//image height
 		mAstroid[count].bearing = BEARING_0;   				//initial direction
-		mAstroid[count].speed = SPRITE_SPEED_SLOW;			//initial speed
+		mAstroid[count].speed = speed;						//initial speed
 		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
 
 		count++;
@@ -160,7 +162,7 @@ void Sprite_Astroid_Init(void)
 		mAstroid[count].sizeX = imgTile.xSize;        		//image width
 		mAstroid[count].sizeY = imgTile.ySize;        		//image height
 		mAstroid[count].bearing = BEARING_180;   			//initial direction
-		mAstroid[count].speed = SPRITE_SPEED_SLOW;			//initial speed
+		mAstroid[count].speed = speed;						//initial speed
 		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
 
 		count++;
@@ -336,31 +338,32 @@ void Sprite_Astroid_Move(void)
 			//////////////////////////////////////////////////
 			//y-direction
 			//moving down, no wrap
-			if ((dy  >  0) && ((mAstroid[i].y < (LCD_HEIGHT -1))))
+			if ((dy  >  0) && ((mAstroid[i].y + dy) <= (LCD_HEIGHT -1)))
 				mAstroid[i].y += dy;
 
-			else if ((dy  >  0) && ((mAstroid[i].y >= (LCD_HEIGHT -1))))
-				mAstroid[i].y = 0;
-
 			//moving down, wrap
-			else if ((dy  >  0) && ((mAstroid[i].y + dy) >= (LCD_HEIGHT - 1)))
+			else if ((dy  >  0) && ((mAstroid[i].y + dy) > (LCD_HEIGHT - 1)))
 				mAstroid[i].y = (mAstroid[i].y + dy) - LCD_HEIGHT;
 
-			//moving up - no wrap - these are all 1, so..
-			else if ((dy  <  0) && (mAstroid[i].y > 0))
-				mAstroid[i].y = ((int)mAstroid[i].y + dy);
+			else if (dy < 0)
+			{
+				uint32_t delta = (uint32_t)(-1 * dy);
 
-			//moving up - wrap
-			else if ((dy  <  0) && (!mAstroid[i].y))
-				mAstroid[i].y = LCD_HEIGHT - 1;
+				//moving up - no wrap
+				if (mAstroid[i].y >= delta)
+					mAstroid[i].y -= delta;
+				else
+				{
+					mAstroid[i].y = LCD_HEIGHT - 1 - delta;
+				}
+			}
 
 
-			//Did the astroid hit the player?? - astroid index
-			//is i, mPlayer.  current index i is alive and already moved
-			//
-			//get the player x, y, ... etc.  Center of the astroid + padding?
-			//has to be in the edge of the player
-			//uint32_t pX, pY, aTop, aBot, aLeft, aRight = 0x00;
+			//////////////////////////////////////////////
+			//Collisions - Astroid Hit Player?
+			//astroid index i, center of player
+			//in the footprint of the astroid
+
 			pX = mPlayer.x + mPlayer.sizeX / 2;
 			pY = mPlayer.y + mPlayer.sizeY / 2;
 
@@ -381,8 +384,8 @@ void Sprite_Astroid_Move(void)
 				if (!rem)
 				{
 					Sound_Play_LevelUp(); 	//play a sound
-					Sprite_Astroid_Init();  //reset the astroid
 					mGameLevel++;
+					Sprite_Astroid_Init(Sprite_GetGameSpeedFromLevel());  //reset the astroid
 				}
 
 			}
@@ -509,8 +512,9 @@ void Sprite_Missile_Move(void)
 						if (!rem)
 						{
 							Sound_Play_LevelUp(); 	//play a sound
-							Sprite_Astroid_Init();  //reset the astroid
 							mGameLevel++;
+							Sprite_Astroid_Init(Sprite_GetGameSpeedFromLevel());  //reset the astroid
+
 						}
 					}
     			}
@@ -1541,6 +1545,24 @@ uint8_t Sprite_GetGameOverFlag(void)
 {
 	return mGameOverFlag;
 }
+
+//////////////////////////////////////////////
+//Get sprite speed from game level
+//intended for moving astroids faster
+//as the game progresses.
+//
+SpriteSpeed_t Sprite_GetGameSpeedFromLevel(void)
+{
+	if(mGameLevel <= 1)
+		return SPRITE_SPEED_SLOW;
+	else if ((mGameLevel > 1) && (mGameLevel <= 3))
+		return SPRITE_SPEED_MEDIUM;
+	else if (mGameLevel > 3)
+		return SPRITE_SPEED_FAST;
+	else
+		return SPRITE_SPEED_FAST;
+}
+
 
 
 
