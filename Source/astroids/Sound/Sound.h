@@ -33,30 +33,37 @@ interrupts, run the output at 11khz, so read every 4th sample
 
 typedef struct 
 {
-	const uint8_t* pSoundData;
+	uint8_t* soundData;
 	uint32_t length;
+	uint8_t bitDepth;
+	uint32_t sampleRate;
 }SoundData;
 
 
 //sound arrays
-extern const SoundData sound_gameover;			//ok
-extern const SoundData sound_levelup;			//ok
-extern const SoundData sound_shootPlayer;
-extern const SoundData sound_shootEnemy;
-extern const SoundData sound_explodePlayer;
+//extern const SoundData sound_gameover;			//ok
+
+extern const SoundData sound_levelUp;			//ok
+extern const SoundData sound_enemyExplode;
+extern const SoundData sound_playerExplode;
+extern const SoundData sound_playerShoot;
 extern const SoundData sound_thruster;
 
 
 void Sound_Init(void);                  //main
 void Sound_InterruptHandler(void);      //main
 
+
+
+
+
+
+
 void Sound_Play_PlayerFire(void);       //player fire
-void Sound_Play_EnemyFire(void);        //enemy fire
 void Sound_Play_PlayerExplode(void);
 void Sound_Play_EnemyExplode(void);
 void Sound_Play_GameOver(void);
 void Sound_Play_LevelUp(void);
-
 void Sound_Play_Thruster(void);
 
 

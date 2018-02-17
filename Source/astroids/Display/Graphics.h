@@ -98,6 +98,13 @@ void LCD_DrawChar(uint8_t layer, uint8_t row, uint8_t col, uint8_t letter);
 void LCD_DrawString(uint8_t layer, uint8_t row, char* output);
 void LCD_DrawStringLength(uint8_t layer, uint8_t row, char output[], uint8_t length);
 
+//text functions - transparency
+void LCD_DrawCharTransparent(uint8_t layer, uint8_t row, uint8_t col, uint16_t transparentColor, uint8_t letter);
+void LCD_DrawStringTransparent(uint8_t layer, uint8_t row, uint16_t transparentColor, char* output);
+void LCD_DrawStringLengthTransparent(uint8_t layer, uint8_t row, uint16_t transparentColor, char output[], uint8_t length);
+
+
+
 //bitmaps
 void LCD_DrawBitmap(uint32_t layer, uint32_t x0, uint32_t y0, const ImageData* image);
 void LCD_DrawBitmapTransparent(uint32_t layer, uint32_t x0, uint32_t y0, const ImageData* image, uint16_t transparentColor);

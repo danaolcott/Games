@@ -595,6 +595,92 @@ void LCD_DrawStringLength(uint8_t layer, uint8_t row, char output[], uint8_t len
 }
 
 
+//text functions - transparency
+void LCD_DrawCharTransparent(uint8_t layer, uint8_t row, uint8_t col, uint16_t transparentColor, uint8_t letter)
+{
+	uint16_t charWidth = 16;
+	uint16_t charHeight = 24;
+
+	//starting point for a single char
+	uint16_t xOffset = col * charWidth;
+	uint16_t yOffset = row * charHeight;
+
+	//write the char in terms of x,y space calling put pixel
+	//first char in the lookup table is ascii 32
+	 uint16_t line = (uint16_t)letter - (uint16_t)32;
+
+	//font table is 16 bits per entry, one entry per line
+	//bit has to be 16 bits since we are shifting up to
+	//16 times
+	uint16_t p = 16, bit = 0;
+
+	//there are 24 elements per char height
+	for (uint16_t i = 0 ; i < 24 ;  i++)
+	{
+		//get element and test for flip top/bottom
+		uint32_t temp = Ascii_16_24_Table[(line*24)+i];
+
+	   //display flipped - read bottom up
+	   if (DISP_ORIENTATION == 180)
+	   {
+		  temp = Ascii_16_24_Table[(line*24)+23-i];
+	   }
+
+		p = 16;      	//pixels on the line
+		bit = 0;        //test if color or no color
+		while (p > 0)
+		{
+			//font table is reading flipped left to right
+//			bit = (((uint16_t)1u << (p-1) ) & temp) >> (p-1);
+
+			//scan right to left
+			bit = (((uint16_t)1u << (16-p) ) & temp) >> (16-p);
+
+			//if the bit = 0 - it's blank - back color
+			//if the bit = 1 - it's a color - line color
+			if (bit == 1)
+			{
+				//test for transparency
+				if (m_lcdTextLineColor != transparentColor)
+					LCD_PutPixel(layer, xOffset + 16 - p, yOffset + i, m_lcdTextLineColor);
+			}
+			else
+			{
+				//test for transparency
+				if (m_lcdTextBackColor != transparentColor)
+					LCD_PutPixel(layer, xOffset + 16 - p, yOffset + i, m_lcdTextBackColor);
+			}
+
+			p--;
+		}
+	}
+}
+
+void LCD_DrawStringTransparent(uint8_t layer, uint8_t row, uint16_t transparentColor, char* output)
+{
+	//get the length limited by max cols
+	uint8_t length = strlen(output);
+	if (length > MAX_COLS)
+		length = MAX_COLS;
+
+	for (uint8_t i = 0 ; i < length ; i++)
+		LCD_DrawCharTransparent(layer, row, i, transparentColor, output[i]);
+}
+
+void LCD_DrawStringLengthTransparent(uint8_t layer, uint8_t row, uint16_t transparentColor, char output[], uint8_t length)
+{
+	//get the length limited by max cols
+	uint8_t size = length;
+	if (length > MAX_COLS)
+		size = MAX_COLS;
+
+	for (uint8_t i = 0 ; i < size ; i++)
+		LCD_DrawCharTransparent(layer, row, i, transparentColor, output[i]);
+
+}
+
+
+
 ///////////////////////////////////////////////
 //Draw bitmap
 //Was hoping to write whole values directly

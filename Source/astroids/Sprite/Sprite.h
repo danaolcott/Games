@@ -39,7 +39,8 @@ and astroid sprites.
 
 #define SPRITE_BACKGROUND_COLOR		BLUE
 
-#define SPRITE_THRUSTER_TIMEOUT_VALUE		50		//engine run timeout
+#define SPRITE_THRUSTER_TIMEOUT_VALUE		40		//engine run timeout
+#define SPRITE_ACCELERATION_TIMEOUT_VALUE	10		//accelerating with thruster on
 
 /////////////////////////////////////////
 //Direction enum

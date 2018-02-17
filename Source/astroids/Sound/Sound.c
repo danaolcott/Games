@@ -41,13 +41,13 @@ void Sound_Init(void)
 //and output is 11khz
 void Sound_InterruptHandler(void)
 {
-	//down counter complete?
-	if (waveCounter > 4)
+	//down counter complete? - every sample
+	if (waveCounter > 1)
 	{
 		//output deref waveData ptr to the dac
 		HAL_DAC_SetValue(&hdac, DAC1_CHANNEL_2, DAC_ALIGN_8B_R, *waveData);
-		waveData+=4;				//increment the pointer
-		waveCounter-=4;			//decrement the downcounter
+		waveData++;				//increment the pointer
+		waveCounter--;			//decrement the downcounter
 	}
 
 	else
@@ -62,7 +62,7 @@ void Sound_InterruptHandler(void)
 ////////////////////////////////////////////////
 void Sound_PlaySound(const SoundData *sound)
 {
-	waveData = (uint8_t*)sound->pSoundData;		//set the pointer
+	waveData = (uint8_t*)sound->soundData;		//set the pointer
 	waveCounter = sound->length;
 
 	//start the timer - calls Sound_InterruptHandler
@@ -73,32 +73,28 @@ void Sound_PlaySound(const SoundData *sound)
 
 void Sound_Play_PlayerFire(void)
 {
-	Sound_PlaySound(&sound_shootPlayer);
-}
-void Sound_Play_EnemyFire(void)
-{
-	Sound_PlaySound(&sound_shootEnemy);
+	Sound_PlaySound(&sound_playerShoot);
 }
 
 void Sound_Play_PlayerExplode(void)
 {
-	Sound_PlaySound(&sound_explodePlayer);
+	Sound_PlaySound(&sound_playerExplode);
 }
 
 void Sound_Play_EnemyExplode(void)
 {
-	Sound_PlaySound(&sound_explodePlayer);
+	Sound_PlaySound(&sound_enemyExplode);
 }
 
 
 void Sound_Play_GameOver(void)
 {
-	Sound_PlaySound(&sound_gameover);
+	Sound_PlaySound(&sound_levelUp);
 }
 
 void Sound_Play_LevelUp(void)
 {
-	Sound_PlaySound(&sound_levelup);
+	Sound_PlaySound(&sound_levelUp);
 }
 
 void Sound_Play_Thruster(void)

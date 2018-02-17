@@ -47,6 +47,7 @@ static uint8_t mPlayerSpecialEventFlag;		//special event flag
 static uint8_t mActiveDisplayLayer;			//flip btw 2 layers for drawing
 
 static uint32_t mGameScore;
+static uint8_t mGameLevel;
 static uint8_t mGameOverFlag;
 
 
@@ -82,6 +83,8 @@ void Sprite_Init(void)
     mActiveDisplayLayer = 0x00;			//initial display layer
 
     mGameScore = 0x00;
+    mGameLevel = 1;
+
     mGameOverFlag = 0x00;
 
 
@@ -259,6 +262,23 @@ void Sprite_Player_Move(void)
 
 		//decrement the timeout
 		mPlayer.thrustTimeout--;
+
+		//after decrementing, check if it timed out and
+		//speed reduces to slow
+		if (!mPlayer.thrustTimeout)
+		{
+			if (mPlayer.speed == SPRITE_SPEED_MEDIUM)
+			{
+				mPlayer.speed = SPRITE_SPEED_SLOW;						//reduce speed
+				mPlayer.thrustTimeout = SPRITE_THRUSTER_TIMEOUT_VALUE;	//reset
+			}
+			else if (mPlayer.speed == SPRITE_SPEED_SLOW)
+			{
+				mPlayer.speed = SPRITE_SPEED_STOP;
+				mPlayer.thrustTimeout = 0;
+			}
+		}
+
 	}
 
 	else
@@ -362,6 +382,7 @@ void Sprite_Astroid_Move(void)
 				{
 					Sound_Play_LevelUp(); 	//play a sound
 					Sprite_Astroid_Init();  //reset the astroid
+					mGameLevel++;
 				}
 
 			}
@@ -489,6 +510,7 @@ void Sprite_Missile_Move(void)
 						{
 							Sound_Play_LevelUp(); 	//play a sound
 							Sprite_Astroid_Init();  //reset the astroid
+							mGameLevel++;
 						}
 					}
     			}
@@ -626,20 +648,26 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 
 	//show a sequence of images at player x and y
 	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp0Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp1Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp2Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp3Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp4Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp5Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
-	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp6Bmp, BLACK);
-	Sprite_DummyDelay(1000000);
 
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp1Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp2Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp3Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp4Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp5Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
+	LCD_DrawBox(mActiveDisplayLayer, mPlayer.x, mPlayer.y, mPlayer.sizeX, mPlayer.sizeY, SPRITE_BACKGROUND_COLOR);
+	LCD_DrawBitmapWrap(mActiveDisplayLayer, mPlayer.x, mPlayer.y, &bmvan0_exp6Bmp, BLACK);
+	Sprite_DummyDelay(2000000);
 
 	//remove the astroid
 	mGameScore += mAstroid[astroidIndex].points;		//get points if you get hit
@@ -892,6 +920,8 @@ int Sprite_WormHole(void)
 //
 void Sprite_UpdateDisplay(void)
 {
+	char buffer[40];
+
 	uint8_t nextLayer = Sprite_GetNextDisplayLayer();
 
 	//clear the page
@@ -901,6 +931,14 @@ void Sprite_UpdateDisplay(void)
 	Sprite_Astroid_Draw(nextLayer);			//draw astroids
 	Sprite_Missle_Draw(nextLayer);			//draw missiles
 
+	//draw the score, number of players, level... etc
+	memset(buffer, 0x00, 40);
+	int n = sprintf(buffer, "S:%04d L:%d P:%d", (int)mGameScore, mGameLevel, mPlayer.numLives);
+
+	///draw with transparent color = back ground for text
+	LCD_DrawStringLengthTransparent(nextLayer, 0, BLACK, buffer, n);
+
+	//set the current display layer to look at nextLayer
 	LCD_SetDisplayLayer0(nextLayer);
 }
 
@@ -1380,6 +1418,8 @@ SpriteDirection_t Sprite_PlayerGetRotation(void)
 //
 void Sprite_PlayerFireThruster(void)
 {
+	static uint8_t thrustCount = SPRITE_ACCELERATION_TIMEOUT_VALUE;
+
 	//play sound
 	Sound_Play_Thruster();
 
@@ -1398,6 +1438,19 @@ void Sprite_PlayerFireThruster(void)
 	if (mPlayer.speed == SPRITE_SPEED_STOP)
 	{
 		mPlayer.speed = SPRITE_SPEED_SLOW;
+		thrustCount = SPRITE_ACCELERATION_TIMEOUT_VALUE;
+	}
+	else if (mPlayer.speed == SPRITE_SPEED_SLOW)
+	{
+		//hold slow for thruster timeout value
+		if (thrustCount > 0)
+			thrustCount--;
+		else
+		{
+			thrustCount = SPRITE_ACCELERATION_TIMEOUT_VALUE;
+			mPlayer.speed = SPRITE_SPEED_MEDIUM;
+		}
+
 	}
 
 	//set the direction based on the current rotation.
