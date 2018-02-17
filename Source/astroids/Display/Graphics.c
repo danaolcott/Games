@@ -510,6 +510,81 @@ void LCD_DrawCircle(uint32_t layer, int32_t x0, int32_t y0, int32_t r, uint16_t 
 
 
 
+//////////////////////////////////////////
+//Draw filled circle -
+//This is from the Adafruit graphics
+//library - I think.
+//
+void LCD_DrawCircleFill(uint32_t layer, int32_t x0, int32_t y0, int32_t r, uint16_t color)
+{
+
+    LCD_DrawVLine(layer, x0, y0-r, 2*(r+1), color);
+
+    int16_t f = 1- r;
+    int16_t ddF_x = 1;
+    int16_t ddF_y = -2 * r;
+    int16_t x = 0;
+    int16_t y = r;
+    int8_t cornername = 3;
+    int16_t delta = 0;
+
+    while (x<y)
+    {
+        if (f >= 0)
+        {
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x;
+
+        if (cornername & 0x1)
+        {
+            LCD_DrawVLine(layer, x0+x, y0-y, 2*y+1+delta, color);
+            LCD_DrawVLine(layer, x0+y, y0-x, 2*x+1+delta, color);
+        }
+        if (cornername & 0x2)
+        {
+            LCD_DrawVLine(layer, x0-x, y0-y, 2*y+1+delta, color);
+            LCD_DrawVLine(layer, x0-y, y0-x, 2*x+1+delta, color);
+        }
+    }
+}
+
+
+////////////////////////////////////////////////
+//Draw vertical Line
+//Draws veritcal line at starting x0, y0
+//with height in pixels.
+//
+void LCD_DrawVLine(uint32_t layer, int16_t x0, int16_t y0, int16_t height, uint16_t color)
+{
+    int16_t tempy1, tempy2, absheight;
+    absheight = abs(height);
+
+    if (height < 0)
+    {
+        tempy1 = y0 - absheight;
+        tempy2 = y0;
+    }
+
+    else
+    {
+        tempy1 = y0;
+        tempy2 = y0 + height;
+    }
+
+    //variables are x1, tempy1, tempy2
+    for (uint16_t i = tempy1 ; i <= tempy2 ; i++)
+    {
+        LCD_PutPixel(layer, x0, i, color);
+    }
+}
+
+
+
 
 ///////////////////////////////////////////////////
 //LCD Text Functions

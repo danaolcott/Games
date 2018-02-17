@@ -92,6 +92,9 @@ void LCD_RotateBuffer(uint32_t sourceLayer, uint32_t destinationLayer, uint16_t 
 
 void LCD_DrawBox(uint32_t layer, uint32_t x0, uint32_t y0, uint32_t sizeX, uint32_t sizeY, uint16_t color);
 void LCD_DrawCircle(uint32_t layer, int32_t x0, int32_t y0, int32_t r, uint16_t color);
+void LCD_DrawCircleFill(uint32_t layer, int32_t x0, int32_t y0, int32_t r, uint16_t color);
+
+void LCD_DrawVLine(uint32_t layer, int16_t x0, int16_t y0, int16_t height, uint16_t color);
 
 //text functions - 16x24 characters
 void LCD_DrawChar(uint8_t layer, uint8_t row, uint8_t col, uint8_t letter);

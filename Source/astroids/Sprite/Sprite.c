@@ -1036,7 +1036,7 @@ void Sprite_Missle_Draw(uint8_t layer)
         //check enemy missile
         if (mMissile[i].life == 1)
         {
-        	LCD_DrawCircle(layer, mMissile[i].x, mMissile[i].y, mMissile[i].size / 2, RED);
+        	LCD_DrawCircleFill(layer, mMissile[i].x, mMissile[i].y, mMissile[i].size / 2, RED);
         }
     }
 }
