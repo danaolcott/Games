@@ -11,8 +11,7 @@ I called this pong but then was reminded that it more closely resembles the 80's
 
 Astroids
 --------
-Mystery Machine vs Angry Birds!!  The game is built on the STM32F429 Discovery board and uses an analog joystick to control player rotation and thrusters.  The onboard user button is used to fire Scooby snacks at Angry Birds from the Mystery Machine.  Angry birds randomly alter trajectory and the game speed increases with each level.  Game sounds output from the onboard DAC (PA5).  Low level hardware drivers were auto generated using STCube tool and the project built using TrueStudio.  The game is actually a lot of fun to play.  Sounds are generated from wav files converted to 8bit arrays.  The sound quality is a work in progress.
-
+Mystery Machine vs Angry Birds!!  The game is built on the STM32F429 Discovery board and uses an analog joystick to control player rotation and thrusters.  The onboard user button is used to fire Scooby snacks at Angry Birds from the Mystery Machine.  Angry Birds randomly alter trajectory and the game speed increases with each level.  Game sounds output from the onboard DAC (PA5).  Low level hardware drivers were auto generated using STCube tool and the project built using TrueStudio.  The game is actually a lot of fun to play.  Sounds are generated from wav files converted to 8bit arrays.  The sound quality is a work in progress.
 
 ![alt text](https://raw.githubusercontent.com/danaolcott/Games/master/Source/images/astroids.jpg)
 
