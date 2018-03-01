@@ -160,6 +160,10 @@ int main(void)
 
 		/* USER CODE BEGIN 3 */
 
+		//check digital joystick values if enabled
+#ifndef JOYSTICK_USE_ANALOG
+		Joystick_Digital_Read();
+#endif
 		////////////////////////////////////////
 		//Check Flags - Joystick
 		if (Sprite_PlayerGetRotateCWFlag() == 1)			//Rotate CW

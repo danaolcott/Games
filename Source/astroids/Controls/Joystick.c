@@ -52,6 +52,7 @@ void Joystick_GetRawData(uint32_t *data)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 
+#ifdef JOYSTICK_USE_ANALOG
 	if (hadc == &hadc3)
 	{
 		//left right
@@ -74,15 +75,48 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 	}
 
+#endif
+
 	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adcRawData, 2);
 }
 
 
+
 ///////////////////////////////////////////
-//Interrupt handler for center button
+//Joystick - Digital Read
+//Read state of 4 joystick pins and set the
+//appropriate flag
 //
-void Joystick_ButtonHandler(void)
+void Joystick_Digital_Read(void)
 {
+#ifndef JOYSTICK_USE_ANALOG
+
+	//left
+	if (!HAL_GPIO_ReadPin(USER_GPIO_PD2_GPIO_Port, USER_GPIO_PD2_Pin))
+	{
+		Sprite_PlayerSetRotateCCWFlag();
+	}
+	//right
+	else if (!HAL_GPIO_ReadPin(USER_GPIO_PD4_GPIO_Port, USER_GPIO_PD4_Pin))
+	{
+		Sprite_PlayerSetRotateCWFlag();
+	}
+
+	//up
+	else if (!HAL_GPIO_ReadPin(USER_GPIO_PD5_GPIO_Port, USER_GPIO_PD5_Pin))
+	{
+		Sprite_PlayerSetThursterFlag();
+	}
+
+	//down
+	else if (!HAL_GPIO_ReadPin(USER_GPIO_PD7_GPIO_Port, USER_GPIO_PD7_Pin))
+	{
+		Sprite_PlayerSetSpecialEventFlag();
+	}
+
+#endif
 
 }
+
+
 

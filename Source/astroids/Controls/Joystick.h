@@ -12,8 +12,9 @@ to DMA stream, continous.
 Connections:
 UP/DOWN - CH4 - PF6
 LEFT/RIGHT - CH13 - PC3
-CENTER PUSH - Interrupt falling edge on PE2
 
+Alternate Joystick - PE2, PE3, PE4 to
+use digital signal for left, right, thruster
 
 */
 //////////////////////////////////////////////////////////
@@ -29,10 +30,14 @@ CENTER PUSH - Interrupt falling edge on PE2
 #define JOYSTICK_DOWN_TRIGGER_VALUE				((uint32_t)1365)
 #define JOYSTICK_UP_TRIGGER_VALUE				((uint32_t)2730)
 
+//comment this out if you want to use digital
+#define JOYSTICK_USE_ANALOG				1
+
+
 
 void Joystick_init(void);
 void Joystick_GetRawData(uint32_t* data);
-void Joystick_ButtonHandler(void);
+void Joystick_Digital_Read(void);
 
 
 

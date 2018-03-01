@@ -1296,45 +1296,15 @@ void Sprite_PlayerClearRotateCCWFlag(void)
 }
 
 
-/////////////////////////////////////////////
-//Rotate player CW and set the image pointer
-//
-void Sprite_PlayerRotateCW(void)
-{
-	SpriteDirection_t current = Sprite_PlayerGetRotation();
-	SpriteDirection_t next = current;
 
-	switch(current)
-	{
-		case SPRITE_DIRECTION_0:	next = SPRITE_DIRECTION_26;		break;
-		case SPRITE_DIRECTION_26:	next = SPRITE_DIRECTION_45;		break;
-		case SPRITE_DIRECTION_45:	next = SPRITE_DIRECTION_63;		break;
-		case SPRITE_DIRECTION_63:	next = SPRITE_DIRECTION_90;		break;
-		case SPRITE_DIRECTION_90:	next = SPRITE_DIRECTION_116;	break;
-		case SPRITE_DIRECTION_116:	next = SPRITE_DIRECTION_135;	break;
-		case SPRITE_DIRECTION_135:	next = SPRITE_DIRECTION_153;	break;
-		case SPRITE_DIRECTION_153:	next = SPRITE_DIRECTION_180;	break;
-		case SPRITE_DIRECTION_180:	next = SPRITE_DIRECTION_206;	break;
-		case SPRITE_DIRECTION_206:	next = SPRITE_DIRECTION_225;	break;
-		case SPRITE_DIRECTION_225:	next = SPRITE_DIRECTION_243;	break;
-		case SPRITE_DIRECTION_243:	next = SPRITE_DIRECTION_270;	break;
-		case SPRITE_DIRECTION_270:	next = SPRITE_DIRECTION_296;	break;
-		case SPRITE_DIRECTION_296:	next = SPRITE_DIRECTION_315;	break;
-		case SPRITE_DIRECTION_315:	next = SPRITE_DIRECTION_333;	break;
-		case SPRITE_DIRECTION_333:	next = SPRITE_DIRECTION_0;		break;
-		default:					next = SPRITE_DIRECTION_90;		break;
-	}
-
-	Sprite_PlayerSetRotation(next);
-
-}
 
 
 
 //////////////////////////////////////////////
-//Rotate player CCW and set the image pointer
+//Rotate player CW and set the image pointer
+//Direction - 0 - Pointing Left.  90 - Pointing up
 //
-void Sprite_PlayerRotateCCW(void)
+void Sprite_PlayerRotateCW(void)
 {
 	SpriteDirection_t current = Sprite_PlayerGetRotation();
 	SpriteDirection_t next = current;
@@ -1357,6 +1327,42 @@ void Sprite_PlayerRotateCCW(void)
 		case SPRITE_DIRECTION_296:	next = SPRITE_DIRECTION_270;	break;
 		case SPRITE_DIRECTION_315:	next = SPRITE_DIRECTION_296;	break;
 		case SPRITE_DIRECTION_333:	next = SPRITE_DIRECTION_315;	break;
+		default:					next = SPRITE_DIRECTION_90;		break;
+	}
+
+	Sprite_PlayerSetRotation(next);
+
+}
+
+
+
+/////////////////////////////////////////////
+//Rotate player CCW and set the image pointer
+//Direction - 0 - Pointing Left.  90 - Pointing up
+//
+void Sprite_PlayerRotateCCW(void)
+{
+	SpriteDirection_t current = Sprite_PlayerGetRotation();
+	SpriteDirection_t next = current;
+
+	switch(current)
+	{
+		case SPRITE_DIRECTION_0:	next = SPRITE_DIRECTION_26;		break;
+		case SPRITE_DIRECTION_26:	next = SPRITE_DIRECTION_45;		break;
+		case SPRITE_DIRECTION_45:	next = SPRITE_DIRECTION_63;		break;
+		case SPRITE_DIRECTION_63:	next = SPRITE_DIRECTION_90;		break;
+		case SPRITE_DIRECTION_90:	next = SPRITE_DIRECTION_116;	break;
+		case SPRITE_DIRECTION_116:	next = SPRITE_DIRECTION_135;	break;
+		case SPRITE_DIRECTION_135:	next = SPRITE_DIRECTION_153;	break;
+		case SPRITE_DIRECTION_153:	next = SPRITE_DIRECTION_180;	break;
+		case SPRITE_DIRECTION_180:	next = SPRITE_DIRECTION_206;	break;
+		case SPRITE_DIRECTION_206:	next = SPRITE_DIRECTION_225;	break;
+		case SPRITE_DIRECTION_225:	next = SPRITE_DIRECTION_243;	break;
+		case SPRITE_DIRECTION_243:	next = SPRITE_DIRECTION_270;	break;
+		case SPRITE_DIRECTION_270:	next = SPRITE_DIRECTION_296;	break;
+		case SPRITE_DIRECTION_296:	next = SPRITE_DIRECTION_315;	break;
+		case SPRITE_DIRECTION_315:	next = SPRITE_DIRECTION_333;	break;
+		case SPRITE_DIRECTION_333:	next = SPRITE_DIRECTION_0;		break;
 		default:					next = SPRITE_DIRECTION_90;		break;
 	}
 

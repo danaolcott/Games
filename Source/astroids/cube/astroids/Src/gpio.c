@@ -154,10 +154,15 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PDPin PDPin PDPin PDPin 
                            PDPin */
+
+
+  ///////////////////////////////////////////////
+  //Add Pullup and polling for PD2, PD4, PD5, PD7
+  //
   GPIO_InitStruct.Pin = TE_Pin|USER_GPIO_PD2_Pin|USER_GPIO_PD4_Pin|USER_GPIO_PD5_Pin 
-                          |USER_GPIO_PD6_Pin;
+                          |USER_GPIO_PD7_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin */
@@ -220,13 +225,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		Sprite_SetMissileLaunchFlag();
 	}
-
-	//PE2 - Joystick Handler
+	//PE2
 	else if (GPIO_Pin == GPIO_PIN_2)
 	{
-		Sprite_SetMissileLaunchFlag();
-
-		Joystick_ButtonHandler();
+		HAL_GPIO_TogglePin(ledRed_GPIO_Port, ledRed_Pin);
 	}
 	//PE3
 	else if (GPIO_Pin == GPIO_PIN_3)
