@@ -31,6 +31,8 @@ static PlayerStruct mPlayer;
 static EnemyStruct mEnemy[NUM_ENEMY];
 static MissileStruct mEnemyMissile[NUM_MISSILE];
 static MissileStruct mPlayerMissile[NUM_MISSILE];
+static DroneStruct mDrone;
+
 
 //flag set from button isr, indicating there is a missile
 //to launch in the main loop
@@ -61,6 +63,7 @@ void Sprite_Init(void)
     Sprite_Player_Init();
     Sprite_Enemy_Init();
     Sprite_Missile_Init();
+    Sprite_Drone_Init();
 
     //init the random numbers
     //rand() % (max_number + 1 - minimum_number) + minimum_number
@@ -122,14 +125,31 @@ void Sprite_Missile_Init(void)
         mEnemyMissile[i].sizeY = imageMissile1.ySize;              //image height
 
         mPlayerMissile[i].life = 0;                          //life - 1 = alive, 0 = dead
-        mPlayerMissile[i].image = &imageMissile1;                   //pointer to image data
+        mPlayerMissile[i].image = &imageMissile1;            //pointer to image data
         mPlayerMissile[i].x = 0;
         mPlayerMissile[i].y = 0;
-        mPlayerMissile[i].sizeX = imageMissile1.xSize;              //image width
-        mPlayerMissile[i].sizeY = imageMissile1.ySize;              //image height
+        mPlayerMissile[i].sizeX = imageMissile1.xSize;       //image width
+        mPlayerMissile[i].sizeY = imageMissile1.ySize;       //image height
 
     }
 }
+
+
+//////////////////////////////////////////
+//Init Drone
+void Sprite_Drone_Init(void)
+{
+	mDrone.life = 0;
+	mDrone.x = 0;
+	mDrone.y = 0;
+	mDrone.image = &imageEnemy1;
+	mDrone.sizeX = imageEnemy1.xSize;
+	mDrone.sizeY = imageEnemy1.ySize;
+	mDrone.timeTick = 0;				//current cycle counter
+	mDrone.timeout = 100;				//number of game cycles to timeout
+	mDrone.horizDirection = SPRITE_DIRECTION_LEFT;
+}
+
 
 
 //////////////////////////////////////////////////////
@@ -358,6 +378,112 @@ void Sprite_Missle_Move(void)
         }
     }
 }
+
+
+
+
+
+
+/////////////////////////////////////////////////
+//If the drone is active, life=1, then move
+//the drone.  decrement the timer tick
+//kill off drone if off screen, timeTick = 0,
+//Drones move left to right,??
+void Sprite_Drone_Move(void)
+{
+	//drone is alive
+	if (mDrone.life == 1)
+	{
+		if (mDrone.horizDirection == SPRITE_DIRECTION_LEFT)
+		{
+			//moving left
+			if ((mDrone.x + mDrone.sizeX) < (SPRITE_MAX_X - 2))
+			{
+				mDrone.x += 2;
+			}
+			else
+			{
+				//remove
+				mDrone.life = 0;
+				mDrone.timeTick = 0;
+				mDrone.x = 0;
+				mDrone.y = 0;
+			}
+		}
+		else
+		{
+			//moving right
+			if ((mDrone.x) > (SPRITE_MIN_X + 2))
+			{
+				mDrone.x -= 2;
+			}
+			else
+			{
+				//remove
+				mDrone.life = 0;
+				mDrone.timeTick = 0;
+				mDrone.x = 0;
+				mDrone.y = 0;
+			}
+		}
+
+		//cycle counter timeout
+		if ((mDrone.timeTick > 0) && (mDrone.timeTick <= mDrone.timeout))
+		{
+			mDrone.timeTick--;			//decrement
+		}
+		else
+		{
+			//kill off
+			mDrone.life = 0;
+			mDrone.timeTick = 0;
+			mDrone.x = 0;
+			mDrone.y = 0;
+		}
+	}
+
+	else
+	{
+		mDrone.timeTick = 0;			//hold
+	}
+
+}
+
+
+
+/////////////////////////////////////////
+//Launch the drone into the player
+//area.  Makes drone struct active,
+//resets a timeout, ???  not sure yet
+//only launch if there is no drone active
+//
+void Sprite_Drone_Launch(void)
+{
+	static SpriteDirection_t dir = SPRITE_DIRECTION_RIGHT;
+
+	if (!mDrone.life)
+	{
+		mDrone.life = 1;
+		mDrone.timeTick = mDrone.timeout;
+		mDrone.x = 10;
+		mDrone.y = 30;
+		mDrone.horizDirection = dir;
+
+		if (dir == SPRITE_DIRECTION_LEFT)
+		{
+			dir = SPRITE_DIRECTION_RIGHT;
+			mDrone.x = 10;
+		}
+		else
+		{
+			dir = SPRITE_DIRECTION_LEFT;
+			mDrone.x = 100;
+		}
+	}
+}
+
+
+
 
 
 /////////////////////////////////////////
@@ -602,6 +728,7 @@ void Sprite_UpdateDisplay(void)
     Sprite_Player_Draw();
     Sprite_Enemy_Draw();
     Sprite_Missle_Draw();
+    Sprite_Drone_Draw();
     LCD_Update(frameBuffer);
 
     int n = sprintf((char*)buffer, "L:%2d S:%6d  P:%d", mGameLevel, mGameScore, mPlayer.numLives);
@@ -653,6 +780,17 @@ void Sprite_Missle_Draw(void)
             LCD_DrawIcon(mPlayerMissile[i].x, mPlayerMissile[i].y, mPlayerMissile[i].image, 0);
     }
 }
+
+
+
+/////////////////////////////////////////
+//Draw the drone if the drone is alive
+void Sprite_Drone_Draw(void)
+{
+	if (mDrone.life == 1)
+		LCD_DrawIcon(mDrone.x, mDrone.y, mDrone.image, 0);
+}
+
 
 
 ////////////////////////////////////////////////

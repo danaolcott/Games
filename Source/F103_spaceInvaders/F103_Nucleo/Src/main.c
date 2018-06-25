@@ -167,9 +167,18 @@ int main(void)
         }
 
 
+        //launch drone
+        if (!(gCounter % 10))
+        {
+        	Sprite_Drone_Launch();
+        }
+
+
+
         Sprite_Player_Move();		//move player
         Sprite_Enemy_Move();		//move enemy
         Sprite_Missle_Move();		//move missle
+        Sprite_Drone_Move();		//move the drone
         Sprite_UpdateDisplay();		//update the display
 
         gCounter++;
