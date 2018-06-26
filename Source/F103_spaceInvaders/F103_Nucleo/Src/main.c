@@ -111,11 +111,11 @@ int main(void)
 	MX_TIM3_Init();
 	MX_USART2_UART_Init();
 
-	LCD_Config();			//config 128x64 display
-	Joystick_Config();		//DMA stream for ADC - A1
-	Sound_Init();
-	Sprite_Init();
-	LCD_BacklightOn();
+	LCD_Config();					//config 128x64 display
+	Joystick_Config();				//DMA stream for ADC - A1
+	Sound_Init();					//timers and sound
+	Sprite_Init();					//game init
+	LCD_BacklightOn();				//backlight
 
 	Sprite_ClearGameOverFlag();
 
@@ -166,14 +166,11 @@ int main(void)
 	        Sprite_Enemy_Missle_Launch();
         }
 
-
         //launch drone
         if (!(gCounter % 10))
         {
         	Sprite_Drone_Launch();
         }
-
-
 
         Sprite_Player_Move();		//move player
         Sprite_Enemy_Move();		//move enemy
@@ -279,7 +276,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   //Timer3 - 11khz timer
   if (htim->Instance == TIM3)
   {
-	  void Sound_InterruptHandler(void);      //main
+	  //keep a test GPIO high
+	  Sound_InterruptHandler();      //main
   }
 
 

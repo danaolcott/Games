@@ -21,6 +21,16 @@ with the sound is complete
 Uses Timer0 - 11khz
 DAC - DACC_CHANNEL_0
 
+Sound Bits:
+PB13 - Bit0 - 4.7k
+PB14 - Bit1 - 2.2k
+PB15 - Bit2 - 1k
+PB1 - Bit3 - 470
+PB2 - Bit4 - 220
+GND -
+
+
+
 */////////////////////////////////////////////////////
 #include <stdio.h>
 #include <stddef.h>
@@ -32,7 +42,7 @@ DAC - DACC_CHANNEL_0
 static uint8_t* waveData;
 static uint32_t waveCounter;
 static void Sound_PlaySound(const SoundData *sound);
-static void Sound_DAC_Write(uint8_t value);
+//static void Sound_DAC_Write(uint8_t value);
 
 //////////////////////////////////////////
 //Sound is tied to timer_driver timer running
@@ -63,6 +73,8 @@ void Sound_InterruptHandler(void)
 
 	else
 	{
+		HAL_GPIO_WritePin(GPIO_D3_GPIO_Port, GPIO_D3_Pin, GPIO_PIN_RESET);
+
 		HAL_TIM_Base_Stop_IT(&htim3);		//timer3 off
 		Sound_DAC_Write(0x00);
 	}
@@ -91,10 +103,10 @@ void Sound_PlaySound(const SoundData *sound)
 void Sound_DAC_Write(uint8_t value)
 {
 	HAL_GPIO_WritePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin, (GPIO_PinState)((value >> 7) & 0x01));
-	HAL_GPIO_WritePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin, (GPIO_PinState)((value >> 6) & 0x01));
-	HAL_GPIO_WritePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin, (GPIO_PinState)((value >> 5) & 0x01));
-	HAL_GPIO_WritePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin, (GPIO_PinState)((value >> 4) & 0x01));
-	HAL_GPIO_WritePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin, (GPIO_PinState)((value >> 3) & 0x01));
+	HAL_GPIO_WritePin(DAC_Bit3_GPIO_Port, DAC_Bit3_Pin, (GPIO_PinState)((value >> 6) & 0x01));
+	HAL_GPIO_WritePin(DAC_Bit2_GPIO_Port, DAC_Bit2_Pin, (GPIO_PinState)((value >> 5) & 0x01));
+	HAL_GPIO_WritePin(DAC_Bit1_GPIO_Port, DAC_Bit1_Pin, (GPIO_PinState)((value >> 4) & 0x01));
+	HAL_GPIO_WritePin(DAC_Bit0_GPIO_Port, DAC_Bit0_Pin, (GPIO_PinState)((value >> 3) & 0x01));
 }
 
 

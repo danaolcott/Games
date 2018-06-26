@@ -36,6 +36,7 @@ extern const SoundData wavSoundPlayerFire;
 
 void Sound_Init(void);                  //main
 void Sound_InterruptHandler(void);      //main
+void Sound_DAC_Write(uint8_t value);
 
 void Sound_Play_PlayerFire(void);       //player fire
 void Sound_Play_EnemyFire(void);        //enemy fire
@@ -43,6 +44,8 @@ void Sound_Play_PlayerExplode(void);
 void Sound_Play_EnemyExplode(void);
 void Sound_Play_GameOver(void);
 void Sound_Play_LevelUp(void);
+
+
 
 
 
