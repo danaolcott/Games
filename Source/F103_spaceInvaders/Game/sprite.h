@@ -124,6 +124,9 @@ void Sprite_Drone_Launch(void);
 void Sprite_Player_Missle_Launch(void);
 void Sprite_Enemy_Missle_Launch(void);
 
+void Sprite_Drone_Missle_Launch(void);
+
+
 int Sprite_Score_EnemyHit(uint8_t enemyIndex, uint8_t missileIndex);
 int Sprite_Score_PlayerHit(uint8_t missileIndex);
 

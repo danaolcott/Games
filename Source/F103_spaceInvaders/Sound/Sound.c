@@ -42,7 +42,7 @@ GND -
 static uint8_t* waveData;
 static uint32_t waveCounter;
 static void Sound_PlaySound(const SoundData *sound);
-//static void Sound_DAC_Write(uint8_t value);
+static void Sound_DAC_Write(uint8_t value);
 
 //////////////////////////////////////////
 //Sound is tied to timer_driver timer running
@@ -73,8 +73,6 @@ void Sound_InterruptHandler(void)
 
 	else
 	{
-		HAL_GPIO_WritePin(GPIO_D3_GPIO_Port, GPIO_D3_Pin, GPIO_PIN_RESET);
-
 		HAL_TIM_Base_Stop_IT(&htim3);		//timer3 off
 		Sound_DAC_Write(0x00);
 	}
@@ -85,10 +83,8 @@ void Sound_InterruptHandler(void)
 void Sound_PlaySound(const SoundData *sound)
 {
 	waveData = (uint8_t*)sound->pSoundData;		//set the pointer
-	waveCounter = sound->length;
-
-    //start the timer that calls the sound isr
-	HAL_TIM_Base_Start_IT(&htim3);		//timer3 off
+	waveCounter = sound->length;				//init counter
+	HAL_TIM_Base_Start_IT(&htim3);				//start the timer
 }
 
 
@@ -108,7 +104,6 @@ void Sound_DAC_Write(uint8_t value)
 	HAL_GPIO_WritePin(DAC_Bit1_GPIO_Port, DAC_Bit1_Pin, (GPIO_PinState)((value >> 4) & 0x01));
 	HAL_GPIO_WritePin(DAC_Bit0_GPIO_Port, DAC_Bit0_Pin, (GPIO_PinState)((value >> 3) & 0x01));
 }
-
 
 
 void Sound_Play_PlayerFire(void)

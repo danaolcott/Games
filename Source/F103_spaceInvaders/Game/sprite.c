@@ -130,7 +130,6 @@ void Sprite_Missile_Init(void)
         mPlayerMissile[i].y = 0;
         mPlayerMissile[i].sizeX = imageMissile1.xSize;       //image width
         mPlayerMissile[i].sizeY = imageMissile1.ySize;       //image height
-
     }
 }
 
@@ -142,9 +141,9 @@ void Sprite_Drone_Init(void)
 	mDrone.life = 0;
 	mDrone.x = 0;
 	mDrone.y = 0;
-	mDrone.image = &imageEnemy1;
-	mDrone.sizeX = imageEnemy1.xSize;
-	mDrone.sizeY = imageEnemy1.ySize;
+	mDrone.image = &bmimgDrone1Bmp;
+	mDrone.sizeX = bmimgDrone1Bmp.xSize;
+	mDrone.sizeY = bmimgDrone1Bmp.ySize;
 	mDrone.timeTick = 0;				//current cycle counter
 	mDrone.timeout = 100;				//number of game cycles to timeout
 	mDrone.horizDirection = SPRITE_DIRECTION_LEFT;
@@ -391,15 +390,26 @@ void Sprite_Missle_Move(void)
 //Drones move left to right,??
 void Sprite_Drone_Move(void)
 {
+	static uint16_t leftCounter = 0;
+	static uint16_t rightCounter = 0;
+
 	//drone is alive
 	if (mDrone.life == 1)
 	{
 		if (mDrone.horizDirection == SPRITE_DIRECTION_LEFT)
 		{
 			//moving left
-			if ((mDrone.x + mDrone.sizeX) < (SPRITE_MAX_X - 2))
+			if ((mDrone.x + mDrone.sizeX) < (SPRITE_MAX_X - 4))
 			{
-				mDrone.x += 2;
+				if (!(leftCounter % 13))
+				{
+					//fire missile
+					Sprite_Drone_Missle_Launch();
+				}
+
+				mDrone.x += 4;
+				leftCounter++;
+
 			}
 			else
 			{
@@ -413,9 +423,17 @@ void Sprite_Drone_Move(void)
 		else
 		{
 			//moving right
-			if ((mDrone.x) > (SPRITE_MIN_X + 2))
+			if ((mDrone.x) > (SPRITE_MIN_X + 4))
 			{
-				mDrone.x -= 2;
+
+				if (!(leftCounter % 17))
+				{
+					//fire missile
+					Sprite_Drone_Missle_Launch();
+				}
+
+				mDrone.x -= 4;
+				rightCounter++;
 			}
 			else
 			{
@@ -529,6 +547,25 @@ void Sprite_Enemy_Missle_Launch(void)
     }
  
 }
+
+
+///////////////////////////////////////////////
+//Launch missle from drone.  Drone is assumed to
+//be onscreen, alive.. etc.  Use enemy missile array
+//for missiles
+void Sprite_Drone_Missle_Launch(void)
+{
+    int nextMissile = Sprite_Enemy_GetNextMissile();    //next missile
+
+	//set the missile in the array as live
+	mEnemyMissile[nextMissile].life = 1;
+	mEnemyMissile[nextMissile].x = mDrone.x + (mDrone.sizeX / 2) - (mEnemyMissile[nextMissile].sizeX / 2);
+	mEnemyMissile[nextMissile].y = mDrone.y + mDrone.sizeY;
+
+	Sound_Play_EnemyFire();
+
+}
+
 
 ////////////////////////////////////////
 //returns the index of the array element

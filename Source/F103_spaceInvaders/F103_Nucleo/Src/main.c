@@ -34,6 +34,22 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
+
+Space Invaders!!!!
+6/27/18
+This version of SpaceInvaders is built on the STM32F103 Nucleo board
+and the 128x64 LCD Shield from DFRobot.  The sound is generated using a
+simple binary weighted 5-bit DAC and an 11khz timer.
+
+
+
+
+
+
+
+
+
+  ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -111,6 +127,11 @@ int main(void)
 	MX_TIM3_Init();
 	MX_USART2_UART_Init();
 
+	/* USER CODE BEGIN 2 */
+
+
+	////////////////////////////////////////////////////
+
 	LCD_Config();					//config 128x64 display
 	Joystick_Config();				//DMA stream for ADC - A1
 	Sound_Init();					//timers and sound
@@ -118,8 +139,6 @@ int main(void)
 	LCD_BacklightOn();				//backlight
 
 	Sprite_ClearGameOverFlag();
-
-	/* USER CODE BEGIN 2 */
 
 
 	/* USER CODE END 2 */
@@ -276,7 +295,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   //Timer3 - 11khz timer
   if (htim->Instance == TIM3)
   {
-	  //keep a test GPIO high
 	  Sound_InterruptHandler();      //main
   }
 
