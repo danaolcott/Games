@@ -95,13 +95,14 @@ typedef struct
 typedef struct
 {
 	uint8_t life;
+	uint8_t points;
 	uint32_t x;
 	uint32_t y;
 	uint32_t sizeX;
 	uint32_t sizeY;
 	const ImageData* image;
-	uint32_t timeout;
-	uint32_t timeTick;
+	uint16_t timeout;
+	uint16_t timeTick;
     SpriteDirection_t horizDirection;
 
 }DroneStruct;
@@ -128,6 +129,7 @@ void Sprite_Drone_Missle_Launch(void);
 
 
 int Sprite_Score_EnemyHit(uint8_t enemyIndex, uint8_t missileIndex);
+void Sprite_Score_DroneHit(uint8_t missileIndex);
 int Sprite_Score_PlayerHit(uint8_t missileIndex);
 
 uint16_t Sprite_GetGameScore(void);
@@ -156,6 +158,7 @@ void Sprite_Missle_Draw(void);
 void Sprite_Drone_Draw(void);
 
 void Sprite_Player_Explode(uint16_t x, uint16_t y);
+void Sprite_Drone_Explode(uint16_t x, uint16_t y);
 
 
 

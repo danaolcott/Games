@@ -1,5 +1,5 @@
 /*
-/////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 Sprite Files
 Provides control and access to the sprites in the system.
 Main sprites include the following:
@@ -11,7 +11,7 @@ image names:
 imagePlayer - 24x10
 imageEnemy - 16x16
 imageMissile - 8 x 8
-
+drone image 24x10
 /////////////////////////////////////////////////////////
 */
 #include <stdlib.h>
@@ -114,15 +114,14 @@ void Sprite_Enemy_Init(void)
 //enemy missiles
 void Sprite_Missile_Init(void)
 {
-
     for (int i = 0 ; i < NUM_MISSILE ; i++)
     {
         mEnemyMissile[i].life = 0;                          //life - 1 = alive, 0 = dead
-        mEnemyMissile[i].image = &imageMissile1;                   //pointer to image data
+        mEnemyMissile[i].image = &imageMissile1;            //pointer to image data
         mEnemyMissile[i].x = 0;
         mEnemyMissile[i].y = 0;
-        mEnemyMissile[i].sizeX = imageMissile1.xSize;              //image width
-        mEnemyMissile[i].sizeY = imageMissile1.ySize;              //image height
+        mEnemyMissile[i].sizeX = imageMissile1.xSize;       //image width
+        mEnemyMissile[i].sizeY = imageMissile1.ySize;       //image height
 
         mPlayerMissile[i].life = 0;                          //life - 1 = alive, 0 = dead
         mPlayerMissile[i].image = &imageMissile1;            //pointer to image data
@@ -141,6 +140,7 @@ void Sprite_Drone_Init(void)
 	mDrone.life = 0;
 	mDrone.x = 0;
 	mDrone.y = 0;
+	mDrone.points = 100;
 	mDrone.image = &bmimgDrone1Bmp;
 	mDrone.sizeX = bmimgDrone1Bmp.xSize;
 	mDrone.sizeY = bmimgDrone1Bmp.ySize;
@@ -301,12 +301,39 @@ void Sprite_Missle_Move(void)
         if ((mPlayerMissile[i].life == 1) && (mPlayerMissile[i].y <= SPRITE_MIN_Y))
             mPlayerMissile[i].life = 0;
 
-        //player missile hit an enemy?
+        //player missile hit an enemy? - Player missile hit
+        //the drone??
+
         //if the missile is alive...
         //for each live enemy, check the x and y position of the missle, top
         //center of the missile within the enemy box
+        //
+        //Add player missile hit the drone
+        //
         if (mPlayerMissile[i].life == 1)
         {
+        	//missile hit drone
+        	if (mDrone.life == 1)
+        	{
+                mX = mPlayerMissile[i].x + (mPlayerMissile[i].sizeX / 2);
+                mY = mPlayerMissile[i].y;
+
+                bot = mDrone.y + mDrone.sizeY - ENEMY_IMAGE_PADDING;
+                top = mDrone.y + ENEMY_IMAGE_PADDING;
+                left = mDrone.x + ENEMY_IMAGE_PADDING;
+                right = mDrone.x + mDrone.sizeX - ENEMY_IMAGE_PADDING;
+
+                //tip of the missile in the drone box
+                 if ((mX >= left) && (mX <= right) && (mY <= bot) && (mY >= top))
+                 {
+                	 //pass missile index to remove the missile
+                	 //play sound, and explosion sequence.
+                	 Sprite_Score_DroneHit(i);
+                 }
+        	}
+
+
+        	//test for player missile hit enemy
             for (int j = 0 ; j < NUM_ENEMY ; j++)
             {
                 //if the enemy is alive...
@@ -390,8 +417,8 @@ void Sprite_Missle_Move(void)
 //Drones move left to right,??
 void Sprite_Drone_Move(void)
 {
-	static uint16_t leftCounter = 0;
-	static uint16_t rightCounter = 0;
+	static uint16_t leftCounter = 21;
+	static uint16_t rightCounter = 21;
 
 	//drone is alive
 	if (mDrone.life == 1)
@@ -401,13 +428,14 @@ void Sprite_Drone_Move(void)
 			//moving left
 			if ((mDrone.x + mDrone.sizeX) < (SPRITE_MAX_X - 4))
 			{
-				if (!(leftCounter % 13))
+				if (!(leftCounter % 9))
 				{
 					//fire missile
 					Sprite_Drone_Missle_Launch();
 				}
 
-				mDrone.x += 4;
+				mDrone.x += 3;
+				mDrone.y--;
 				leftCounter++;
 
 			}
@@ -426,13 +454,13 @@ void Sprite_Drone_Move(void)
 			if ((mDrone.x) > (SPRITE_MIN_X + 4))
 			{
 
-				if (!(leftCounter % 17))
+				if (!(leftCounter % 13))
 				{
 					//fire missile
 					Sprite_Drone_Missle_Launch();
 				}
 
-				mDrone.x -= 4;
+				mDrone.x -= 3;
 				rightCounter++;
 			}
 			else
@@ -484,7 +512,9 @@ void Sprite_Drone_Launch(void)
 		mDrone.life = 1;
 		mDrone.timeTick = mDrone.timeout;
 		mDrone.x = 10;
-		mDrone.y = 30;
+		mDrone.y = 38;
+		mDrone.points = 100;
+
 		mDrone.horizDirection = dir;
 
 		if (dir == SPRITE_DIRECTION_LEFT)
@@ -650,6 +680,22 @@ int Sprite_Score_EnemyHit(uint8_t enemyIndex, uint8_t missileIndex)
     int remaining = Sprite_GetNumEnemy();
 
     return remaining;
+}
+
+
+void Sprite_Score_DroneHit(uint8_t missileIndex)
+{
+    Sound_Play_EnemyExplode();                    		//play sound
+    Sprite_Drone_Explode(mDrone.x, mDrone.y);			//show explosion
+    mGameScore += mDrone.points;                        //increment the score
+    mDrone.life = 0;
+    mDrone.x = 0;
+    mDrone.y = 0;
+    mDrone.horizDirection = SPRITE_DIRECTION_RIGHT;
+
+    mPlayerMissile[missileIndex].life = 0;     			//remove missile
+    mPlayerMissile[missileIndex].x = 0;                 //reset x
+    mPlayerMissile[missileIndex].y = 0;                 //reset y
 }
 
 
@@ -853,6 +899,21 @@ void Sprite_Player_Explode(uint16_t x, uint16_t y)
     Sprite_DummyDelay(700000);
 }
 
+///////////////////////////////////////////////////////
+//Play explosion sequence for drone
+//x and y are the coordinates of the drone
+//use force update to LCD
+void Sprite_Drone_Explode(uint16_t x, uint16_t y)
+{
+    LCD_DrawIcon(x, y, &bmimgDroneExp1Bmp, 1);
+    Sprite_DummyDelay(200000);
+    LCD_DrawIcon(x, y, &bmimgDroneExp2Bmp, 1);
+    Sprite_DummyDelay(200000);
+    LCD_DrawIcon(x, y, &bmimgDroneExp3Bmp, 1);
+    Sprite_DummyDelay(200000);
+    LCD_DrawIcon(x, y, &bmimgDroneExp4Bmp, 1);
+    Sprite_DummyDelay(200000);
+}
 
 
 

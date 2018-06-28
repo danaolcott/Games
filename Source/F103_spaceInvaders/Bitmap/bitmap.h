@@ -35,5 +35,10 @@ extern const ImageData bmimgPlayerExp2Bmp;
 extern const ImageData bmimgPlayerExp3Bmp;
 extern const ImageData bmimgPlayerExp4Bmp;
 
+extern const ImageData bmimgDroneExp1Bmp;
+extern const ImageData bmimgDroneExp2Bmp;
+extern const ImageData bmimgDroneExp3Bmp;
+extern const ImageData bmimgDroneExp4Bmp;
+
 
 #endif

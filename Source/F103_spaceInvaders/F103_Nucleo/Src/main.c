@@ -129,17 +129,14 @@ int main(void)
 
 	/* USER CODE BEGIN 2 */
 
-
-	////////////////////////////////////////////////////
-
+	/////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
 	LCD_Config();					//config 128x64 display
 	Joystick_Config();				//DMA stream for ADC - A1
 	Sound_Init();					//timers and sound
 	Sprite_Init();					//game init
 	LCD_BacklightOn();				//backlight
-
 	Sprite_ClearGameOverFlag();
-
 
 	/* USER CODE END 2 */
 
@@ -186,7 +183,7 @@ int main(void)
         }
 
         //launch drone
-        if (!(gCounter % 10))
+        if (!(gCounter % 20))
         {
         	Sprite_Drone_Launch();
         }
