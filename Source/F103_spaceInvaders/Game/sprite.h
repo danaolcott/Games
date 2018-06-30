@@ -1,5 +1,12 @@
+//////////////////////////////////////////////////////
 /*
 Sprite header file
+The sprite header and function definition files pretty
+much define the entire game.  It contains all functions for
+moving player, enemy, missles, etc.  It works with the sound
+files to play sounds as needed.  Sprite.h and Sprite.c also
+use the LCD driver files for drawing images on the display.
+
 
 */
 
@@ -49,8 +56,6 @@ typedef enum
 	SPRITE_VERTICAL_DOWN,
 	SPRITE_VERTICAL_UP,
 }SpriteVerticalDirection_t;
-
-
 
 //player
 typedef struct

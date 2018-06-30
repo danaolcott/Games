@@ -1,7 +1,14 @@
 /*
  *
- * table definition for character
- * offsets
+ * Table definition for character
+ * offsets.  The offsets listed represent
+ * the number of pixels from the right side edge
+ * of the character to the edge of the 8x8 space.
+ * Including the offset into draw string function allows
+ * character spacing to be even with varying character
+ * widths.
+ *
+ * NOTE:  I don't think the values listed below are correct
  *
  */
 

@@ -5,12 +5,9 @@
  *  Author: danao
 
  Joystick 5 position attached to the LCD shield
- Read from A0 or A1.  Since A0 is not on the board,
- A1 is connected to A0 on the shield.  This is the same
- as AFE1_AD6
-
- limits for up, down, left, right, and button press
-
+ Read from A0 or A1.  Using the STM32F103 Nucleo board, I'm using
+ A0.  WHen the shield is on the Atmel SAME70 M7 board, I'm using
+ A1.
 
  */ 
 

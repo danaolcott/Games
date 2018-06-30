@@ -4,6 +4,12 @@
  *
  * Created: 6/16/2018 1:14:52 AM
  *  Author: danao
+ *
+ *  Configures the DMA transfer from ADC peripheral
+ *  to memory.  Once DMA starts, the ADC values from
+ *  channels A0 and A1 (see pinout) are available at
+ *  any time.  See joystick.h for joystick limits
+ *  for up, down... etc.
  */ 
 ///////////////////////////////////////////////////
 
@@ -28,10 +34,12 @@ void Joystick_Config(void)
 
 
 //////////////////////////////////////////////////
-//Read value of ADC - AD6, labeled as A1
-//on the board.  It's connected to the A0 on the
-//Channel6 is shown on the board as A1
-//12 bit value - 0 to 4096
+//Read value of ADC - Channel 0.  It's labeled as
+//A0 on the headers.  Note that this file was also
+//used with the Atmel SAME70 board, which required
+//connecting channels A0 and A1 together and reading
+//A1 (in case there are discrepancies in the text)
+//
 JoystickPosition_t Joystick_GetPosition(void)
 {
 	uint16_t value = (uint16_t)rawAdcData[0];

@@ -10,6 +10,11 @@ http://ccgi.cjseymour.plus.com/wavtocode/wavtocode.htm
 Sounds assumed to be sampled at 44khz.  To avoid jamming up the
 interrupts, run the output at 11khz, so read every 4th sample
 
+NOTE: initially, this read every 4th sample.  I ran out of code
+space, so compressed files down to be sampled at 11khz and read
+every sample.  The test program for doing this should be in the
+linux repository. (still under construction?)
+
 */
 //////////////////////////////////////////////////////////
 

@@ -1,6 +1,12 @@
-//table definitions for font table
+///////////////////////////////////////////////////
+//Table definitions for font table
 //Arranged in pages with LSB at the top of each
-//page.  
+//page.  This font table is intended to be used with
+//a 1bit per pixel display with bits aligned LSB at top of
+//page.  An example of which is Newhaven display
+//PN# NHD-C12864A1Z-FSB-FBW-HTT
+//and several others from Electronic Assembly.
+//
 
 #include <stdint.h>
 #include <stddef.h>

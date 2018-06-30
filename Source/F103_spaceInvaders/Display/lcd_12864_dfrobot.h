@@ -41,17 +41,14 @@ SPI: idle clock high, data on trailing edge, MSB first
 
 #define LCD_HEIGHT				64
 #define LCD_WIDTH				128
-
 #define LCD_NUM_PAGE			8
 #define LCD_NUM_COL				128
-
 #define FRAME_BUFFER_SIZE		(LCD_HEIGHT * LCD_WIDTH / 8)
 
 
 /////////////////////////////////////////////////////
 extern uint8_t frameBuffer[FRAME_BUFFER_SIZE];
 extern uint8_t workingBuffer[FRAME_BUFFER_SIZE];
-
 
 void LCD_WriteCommand(uint8_t cmd);
 void LCD_WriteData(uint8_t data);
@@ -92,8 +89,6 @@ void LCD_DrawLine(int x0, int y0, int x1, int y1, uint8_t color);
 
 void LCD_DrawBitmap(const ImageData *image, uint8_t update);
 void LCD_DrawIcon(uint32_t offsetX, uint32_t offsetY, const ImageData *pImage, uint8_t update);
-
-
 
 
 

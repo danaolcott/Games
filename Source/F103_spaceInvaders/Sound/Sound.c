@@ -18,10 +18,15 @@ Sound_InterrruptHandler in the timer isr
 Timer is running anytime the sound is on, not running
 with the sound is complete
 
+Atmel SAME70 M7-series board -
 Uses Timer0 - 11khz
 DAC - DACC_CHANNEL_0
 
-Sound Bits:
+STM32F103 Nucleo board:  Built DAC out of IO
+pins and resistors.  Uses Timer TIM3
+to read the sound file.
+
+Sound Bits and resistor values:
 PB13 - Bit0 - 4.7k
 PB14 - Bit1 - 2.2k
 PB15 - Bit2 - 1k
@@ -44,23 +49,25 @@ static uint32_t waveCounter;
 static void Sound_PlaySound(const SoundData *sound);
 static void Sound_DAC_Write(uint8_t value);
 
-//////////////////////////////////////////
-//Sound is tied to timer_driver timer running
-//at 11khz.   Timer1A ISR running
-//at 11khz
-//Sound off?
+//////////////////////////////////////////////
+//Configure a timer to run at 11khz and shut it off.
+//NOTE: STM code all init are in main.  Use
+//Start_IT and Stop_IT functions for starting
+//and stopping the timer.
+//
 void Sound_Init(void)
 {
 	HAL_TIM_Base_Stop_IT(&htim3);		//timer3 off
-	Sound_DAC_Write(0x00);
+	Sound_DAC_Write(0x00);				//set all bits low
 }
 
 /////////////////////////////////////////////
 //Sound_InterruptHandler
-//Put this function call in the timer ISR.
+//Put this function call in the Timer ISR.
 //Typically wave files are 44khz.  Therefore, 
 //play every 4th element with timer running
-//at 11khz.
+//at 11khz.  Or, if files are compressed to
+//11khz, then play every sample with 11khz timer.
 //
 void Sound_InterruptHandler(void)
 {
@@ -80,6 +87,12 @@ void Sound_InterruptHandler(void)
 
 
 ////////////////////////////////////////////////
+//Play sound.  Takes pointer to a SoundData file
+//point waveData to the sound array and counter
+//to the size of the sound array.  Also, start
+//the timer.  Sound data is played in the timer
+//ISR until the sound array is finished playing.
+//
 void Sound_PlaySound(const SoundData *sound)
 {
 	waveData = (uint8_t*)sound->pSoundData;		//set the pointer
@@ -90,7 +103,7 @@ void Sound_PlaySound(const SoundData *sound)
 
 
 /////////////////////////////////////////////////
-//dump sound data to DAC bits
+//Dump sound data to DAC bits
 //DAC_Bit0 - DAC_Bit4, located on the following
 //pins (should be all in the same row on the
 //Nucleo board:
@@ -124,7 +137,6 @@ void Sound_Play_EnemyExplode(void)
 {
 	Sound_PlaySound(&wavSoundEnemyExplode);
 }
-
 
 void Sound_Play_GameOver(void)
 {

@@ -41,6 +41,10 @@ This version of SpaceInvaders is built on the STM32F103 Nucleo board
 and the 128x64 LCD Shield from DFRobot.  The sound is generated using a
 simple binary weighted 5-bit DAC and an 11khz timer.
 
+The following main.c program is largly auto generated using the
+STMCube tool.  F103_Nucleo project folder for STCube project
+pinouts.
+
 
 
 
@@ -148,14 +152,16 @@ int main(void)
 
 		/* USER CODE BEGIN 3 */
 
+		///////////////////////////////////
 		//Game Over??
         if (Sprite_GetGameOverFlag() == 1)
         {
 	        Sound_Play_GameOver();
 	        HAL_Delay(2000);
         }
-		//button presses clear the flag if the
-		//flag is set
+
+        ///////////////////////////////////////
+		//Game over flag - clear with button press
         while (Sprite_GetGameOverFlag() == 1)
         {
 	        LCD_DrawStringKern(2, 3, " Press Button");
@@ -165,6 +171,7 @@ int main(void)
 	        Sprite_Init();                  //reset and clear all flags
         }
 
+        ///////////////////////////////////////////
         //launch any new missiles from player?
         if (Sprite_GetPlayerMissileLaunchFlag() == 1)
         {
@@ -172,7 +179,8 @@ int main(void)
 	        Sprite_Player_Missle_Launch();          //launch missile
         }
 
-        //launch any new missiles from enemy?
+        ////////////////////////////////////////////
+        //launch any new missiles from enemy
         uint16_t interval = 30 - (2 * Sprite_GetGameLevel());
         if (interval < 5)
 			interval = 5;
@@ -182,7 +190,8 @@ int main(void)
 	        Sprite_Enemy_Missle_Launch();
         }
 
-        //launch drone
+        ////////////////////////////////////////////////
+        //launch drone - every 20 game cycles
         if (!(gCounter % 20))
         {
         	Sprite_Drone_Launch();
@@ -282,7 +291,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 /* USER CODE BEGIN Callback 1 */
 
-  //add other callback code for TIM2 and TIM3
+  ////////////////////////////////////////////
+  //Timer TIM2 - Not Used For Now
   if (htim->Instance == TIM2)
   {
 
@@ -290,6 +300,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   //////////////////////////////////////
   //Timer3 - 11khz timer
+  //Sound timer.  Runs when sound is playing.
+  //Timer stops when sound array is done.
+  //See sound.h
   if (htim->Instance == TIM3)
   {
 	  Sound_InterruptHandler();      //main

@@ -6,6 +6,7 @@ Main sprites include the following:
 Player - single player that moves in x direction
 Enemy - moves left and right, drops down one row each time
 missile - moves up or down depending on who's shooting the missile
+drone - drones cross the LCD periodically and fire at the player.
 
 image names:
 imagePlayer - 24x10
@@ -72,9 +73,8 @@ void Sprite_Init(void)
 }
 
 
-
-
-//////////////////////////////////
+//////////////////////////////////////////////////////
+//Init the player struct
 void Sprite_Player_Init(void)
 {
     mPlayer.numLives = PLAYER_DEFAULT_LIVES;
@@ -86,6 +86,8 @@ void Sprite_Player_Init(void)
 }
 
 
+////////////////////////////////////////////////
+//Init the array of enemy structs
 void Sprite_Enemy_Init(void)
 {
     uint8_t count = 0;
@@ -437,7 +439,6 @@ void Sprite_Drone_Move(void)
 				mDrone.x += 3;
 				mDrone.y--;
 				leftCounter++;
-
 			}
 			else
 			{
@@ -453,7 +454,6 @@ void Sprite_Drone_Move(void)
 			//moving right
 			if ((mDrone.x) > (SPRITE_MIN_X + 4))
 			{
-
 				if (!(leftCounter % 13))
 				{
 					//fire missile
@@ -492,16 +492,14 @@ void Sprite_Drone_Move(void)
 	{
 		mDrone.timeTick = 0;			//hold
 	}
-
 }
 
 
 
-/////////////////////////////////////////
-//Launch the drone into the player
-//area.  Makes drone struct active,
-//resets a timeout, ???  not sure yet
-//only launch if there is no drone active
+/////////////////////////////////////////////////////
+//Launch the drone into the player area.
+//Makes drone struct active, resets a timeout.
+//life = 0 of offscreen or timeout.
 //
 void Sprite_Drone_Launch(void)
 {
@@ -881,16 +879,16 @@ void Sprite_Drone_Draw(void)
 //flash through a few images on a delay
 void Sprite_Player_Explode(uint16_t x, uint16_t y)
 {
-    LCD_DrawIcon(mPlayer.x, mPlayer.y, &bmimgPlayerExp1Bmp, 1);
+    LCD_DrawIcon(x, y, &bmimgPlayerExp1Bmp, 1);
 	LCD_BacklightOff();
     Sprite_DummyDelay(700000);
-    LCD_DrawIcon(mPlayer.x, mPlayer.y, &bmimgPlayerExp2Bmp, 1);
+    LCD_DrawIcon(x, y, &bmimgPlayerExp2Bmp, 1);
 	LCD_BacklightOn();
     Sprite_DummyDelay(700000);
-    LCD_DrawIcon(mPlayer.x, mPlayer.y, &bmimgPlayerExp3Bmp, 1);
+    LCD_DrawIcon(x, y, &bmimgPlayerExp3Bmp, 1);
 	LCD_BacklightOff();
     Sprite_DummyDelay(700000);
-    LCD_DrawIcon(mPlayer.x, mPlayer.y, &bmimgPlayerExp4Bmp, 1);
+    LCD_DrawIcon(x, y, &bmimgPlayerExp4Bmp, 1);
 	LCD_BacklightOn();
     Sprite_DummyDelay(700000);
 	LCD_BacklightOff();

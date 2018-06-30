@@ -14,6 +14,8 @@
 Link to the Mfg website:
 https://www.dfrobot.com/wiki/index.php/LCD12864_Shield_SKU:DFR0287#Pin_Out
 
+LCD: Newhaven Display.  PN#: NHD-C12864A1Z-FSB-FBW-HTT
+
 Pinout: Labels shown are for Arduino style headers.  See
 pindefs.h for conversion to atmel board.
 SPI Com: SCK = 13, MOSI = 11, CS = 10, CD = 9, RST = 8
@@ -25,22 +27,19 @@ CMD/DATA: 9
 Reset: 8
 Backlight: 7
 
-From Display Driver Datasheet: 
 SPI: idle clock high, data on trailing edge, MSB first
 
 A0 pin (CD pin) - low = cmd, high = data
 aligned in pages, vertical, page 0 at top of LCD
 pixels aligned LSB top, MSB bottom of page
 
-Page 19 - starting point for register settings
-
-
 
 
 /////////////////////////////////////////////////////////////
  */ 
 
-#include <string.h>
+#include <string.h>				//sprintf??
+#include <stdlib.h>				//abs function
 
 #include "spi.h"				//spi control - SPI1
 #include "gpio.h"				//pin control
@@ -64,7 +63,7 @@ static void LCD_DummyDelay(uint32_t count)
 		temp--;
 }
 
-///////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Write Command to LCD
 //CMD - low
 void LCD_WriteCommand(uint8_t cmd)
@@ -77,7 +76,7 @@ void LCD_WriteCommand(uint8_t cmd)
 }
 
 
-///////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Write to LCD Data register
 void LCD_WriteData(uint8_t data)
 {
@@ -88,7 +87,7 @@ void LCD_WriteData(uint8_t data)
 	HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, GPIO_PIN_SET);		//deselect
 }
 
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Write Data using burst write
 //All data is dumped with a single chip select
 //args: pointer and length
@@ -101,7 +100,7 @@ void LCD_WriteDataBurst(uint8_t* data, uint16_t length)
 }
 
 
-/////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Configure Pins and register settings
 //Pins are for reset, cmd/data, backlight
 //
@@ -192,7 +191,7 @@ void LCD_On(void)
 }
 
 //////////////////////////////////////////
-//equivalent of sleep on
+//LCD Off - Sleep on
 void LCD_Off(void)
 {
 	LCD_WriteCommand(0xAC);		//static indicator off
@@ -226,15 +225,17 @@ void LCD_SetColumn(uint8_t col)
 		uint8_t bot = (col & 0x0F);				//or 0x00
 		LCD_WriteCommand(top | 0x10);
 
-		//add 4 for reverse - ADC register
-		LCD_WriteCommand(bot | 0x00);			//add 4 for NHD display??
+		//NOTE: When writing reverse ADC register
+		//add 4 to the following line
+		LCD_WriteCommand(bot | 0x00);
+
 	}
 }
 
 
 
 
-////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Set Contrast - 2 byte write
 //Set contrast command enable write
 //Write the contrast value - 0 to 255
@@ -246,7 +247,7 @@ void LCD_SetContrast(uint8_t contrast)
 }
 
 
-//////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Configure the address of COM0 - initial 
 //starting point of display data
 //0x40 | start line, where start line = 0 to 63
@@ -262,7 +263,8 @@ void LCD_SetDisplayStartLine(uint8_t line)
 
 //////////////////////////////////////////////////
 //Clear LCD with a value
-//column should be auto increment
+//Column auto increments, but pages do not wrap
+//
 void LCD_Clear(uint8_t data)
 {
 	LCD_ClearMemory(frameBuffer, data);
@@ -306,14 +308,14 @@ void LCD_ClearPage(uint8_t page, uint8_t width, uint8_t Loffset, uint8_t value)
 	}	
 }
 
-/////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Clear frame buffer with data
 void LCD_ClearMemory(uint8_t* buffer, uint8_t data)
 {
 	memset(buffer, data, FRAME_BUFFER_SIZE);
 }
 
-////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //Update the LCD with the contents of gFrameBuffer1
 //NOTE: LCD does not wrap from one page to the next!!
 //
@@ -335,7 +337,7 @@ void LCD_Update(uint8_t* buffer)
 
 
 
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //LCD_DrawCharKern
 //helper function for drawstring kern
 //uses offset table and kerning for closer
@@ -370,7 +372,7 @@ void LCD_DrawCharKern(uint8_t kern, uint8_t letter)
 }
 
 
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //LCD_WriteStringKern
 //implements offset and kern for controlled
 //character spacing.  pass the kern and letter into
@@ -436,6 +438,10 @@ void LCD_DrawStringKern(uint8_t row_initial, uint8_t kern, const char* mystring)
 }
 
 
+//////////////////////////////////////////////////////
+//Draw string with kerning and offset
+//Args: pointer to buffer and length.  Intended
+//to be used with sprintf, etc. where length is known.
 void LCD_DrawStringKernLength(uint8_t row_initial, uint8_t kern, uint8_t* mystring, uint8_t length)
 {
 	uint8_t row = row_initial & 0x07;       //max value of row is 7
@@ -462,25 +468,18 @@ void LCD_DrawStringKernLength(uint8_t row_initial, uint8_t kern, uint8_t* mystri
 
 		if ((position + temp) < 127)
 		{
-			//put the contents of the function here, we need
-			//to update the frame buffer
-			//LCD_DrawCharKern(kern, mystring[count]);
-
 			line = mystring[count] - 27;		//ie, for char 32 " ", it's on line 5
 			value0 = (line-1) << 3;
+			width = 8 - offset[mystring[count] - 32];	//width from offset table
 
-			//char width from offset
-			width = 8 - offset[mystring[count] - 32];
-
-			//loop through the width
 			for (i = 0 ; i < width ; i++)
 			{
-				LCD_WriteData(font_table[value0 + i]);
-				frameBuffer[element] = font_table[value0 + i];
+				LCD_WriteData(font_table[value0 + i]);			//write to LCD directly
+				frameBuffer[element] = font_table[value0 + i];	//update the framebuffer
 				element++;
 			}
 			
-			//now write the remaining spacing between chars
+			//write remaining spacing between chars
 			for (i = 0 ; i < kern ; i++)
 			{
 				LCD_WriteData(0x00);
@@ -489,8 +488,7 @@ void LCD_DrawStringKernLength(uint8_t row_initial, uint8_t kern, uint8_t* mystri
 			}
 		}
 
-		position += temp;
-		//count++;
+		position += temp;			//update current column position with char width
 	}
 }
 
@@ -641,6 +639,8 @@ void LCD_DisplayShift(int dx, int dy, uint8_t wrap, uint8_t update)
 
 
 //////////////////////////////////////////////////
+//Draw line on LCD.  Updates framebuffer and the
+//display
 void LCD_DrawLine(int x0, int y0, int x1, int y1, uint8_t color)
 {
 	int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
@@ -744,7 +744,6 @@ void LCD_DrawBitmap(const ImageData *image, uint8_t update)
 			data = in0 | in1 | in2 | in3 | in4 | in5 | in6 | in7;
 
 			//update framebuffer
-//			LCD_WriteData(data);
 			frameBuffer[element++] = data;
 		}
 	}
@@ -791,8 +790,10 @@ void LCD_DrawIcon(uint32_t offsetX, uint32_t offsetY, const ImageData *pImage, u
 				if (bitValue == 1)
 					LCD_PutPixel(x, y, 1, update);
 				else
+				{
 					if (update == 1)
 						LCD_PutPixel(x, y, 0, update);
+				}
 
 				x++;            //increment the x
 				p--;
