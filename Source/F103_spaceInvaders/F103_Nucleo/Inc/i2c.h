@@ -1,7 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * File Name          : I2C.h
+  * Description        : This file provides code for the configuration
+  *                      of the I2C instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -36,70 +37,47 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
+#ifndef __i2c_H
+#define __i2c_H
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f1xx_hal.h"
+#include "main.h"
 
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
 
-/* Private define ------------------------------------------------------------*/
-
-#define userButton_Pin GPIO_PIN_13
-#define userButton_GPIO_Port GPIOC
-#define userButton_EXTI_IRQn EXTI15_10_IRQn
-#define ADC_A0_Pin GPIO_PIN_0
-#define ADC_A0_GPIO_Port GPIOA
-#define ADC_A1_Pin GPIO_PIN_1
-#define ADC_A1_GPIO_Port GPIOA
-#define DAC_Bit3_Pin GPIO_PIN_1
-#define DAC_Bit3_GPIO_Port GPIOB
-#define DAC_Bit4_Pin GPIO_PIN_2
-#define DAC_Bit4_GPIO_Port GPIOB
-#define DAC_Bit0_Pin GPIO_PIN_13
-#define DAC_Bit0_GPIO_Port GPIOB
-#define DAC_Bit1_Pin GPIO_PIN_14
-#define DAC_Bit1_GPIO_Port GPIOB
-#define DAC_Bit2_Pin GPIO_PIN_15
-#define DAC_Bit2_GPIO_Port GPIOB
-#define LCD_CMD_Pin GPIO_PIN_7
-#define LCD_CMD_GPIO_Port GPIOC
-#define memoryWP_Pin GPIO_PIN_9
-#define memoryWP_GPIO_Port GPIOC
-#define LCD_Backlight_Pin GPIO_PIN_8
-#define LCD_Backlight_GPIO_Port GPIOA
-#define LCD_Reset_Pin GPIO_PIN_9
-#define LCD_Reset_GPIO_Port GPIOA
-#define shieldButton_Pin GPIO_PIN_10
-#define shieldButton_GPIO_Port GPIOA
-#define shieldButton_EXTI_IRQn EXTI15_10_IRQn
-#define memoryVCLK_Pin GPIO_PIN_11
-#define memoryVCLK_GPIO_Port GPIOC
-#define GPIO_D3_Pin GPIO_PIN_3
-#define GPIO_D3_GPIO_Port GPIOB
-#define GPIO_D5_Pin GPIO_PIN_4
-#define GPIO_D5_GPIO_Port GPIOB
-#define GPIO_D4_Pin GPIO_PIN_5
-#define GPIO_D4_GPIO_Port GPIOB
-#define SPI1_CS_Pin GPIO_PIN_6
-#define SPI1_CS_GPIO_Port GPIOB
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void _Error_Handler(char *, int);
+extern void _Error_Handler(char *, int);
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+void MX_I2C1_Init(void);
+void MX_I2C2_Init(void);
+
+/* USER CODE BEGIN Prototypes */
+
+/* USER CODE END Prototypes */
+
+#ifdef __cplusplus
+}
+#endif
+#endif /*__ i2c_H */
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
-*/ 
+  */
 
-#endif /* __MAIN_H */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

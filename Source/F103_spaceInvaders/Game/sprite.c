@@ -297,7 +297,7 @@ void Sprite_Missle_Move(void)
         //player missles
         //player missile - moving up (y-) - live = 1, move
         if ((mPlayerMissile[i].life == 1) && (mPlayerMissile[i].y > SPRITE_MIN_Y))
-            mPlayerMissile[i].y--;
+            mPlayerMissile[i].y-=2;
 
         //player missile off the screen?
         if ((mPlayerMissile[i].life == 1) && (mPlayerMissile[i].y <= SPRITE_MIN_Y))

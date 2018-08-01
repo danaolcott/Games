@@ -34,32 +34,13 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-
-Space Invaders!!!!
-6/27/18
-This version of SpaceInvaders is built on the STM32F103 Nucleo board
-and the 128x64 LCD Shield from DFRobot.  The sound is generated using a
-simple binary weighted 5-bit DAC and an 11khz timer.
-
-The following main.c program is largly auto generated using the
-STMCube tool.  F103_Nucleo project folder for STCube project
-pinouts.
-
-
-
-
-
-
-
-
-
-  ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
 #include "adc.h"
 #include "dma.h"
+#include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -72,6 +53,29 @@ pinouts.
 #include "Sound.h"
 #include "joystick.h"
 #include "bitmap.h"
+
+#include "eeprom.h"
+#include "score.h"
+
+
+/*
+Space Invaders!!!!
+6/27/18
+This version of SpaceInvaders is built on the STM32F103 Nucleo board
+and the 128x64 LCD Shield from DFRobot.  The sound is generated using a
+simple binary weighted 5-bit DAC and an 11khz timer.
+
+The following main.c program is largly auto generated using the
+STMCube tool.  F103_Nucleo project folder for STCube project
+pinouts.
+
+
+*/
+
+
+
+
+
 
 
 /* USER CODE END Includes */
@@ -102,36 +106,38 @@ uint32_t gCounter = 0x00;
 int main(void)
 {
 
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration----------------------------------------------------------*/
+  /* MCU Configuration----------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_DMA_Init();
-	MX_ADC1_Init();
-	MX_SPI1_Init();
-	MX_TIM2_Init();
-	MX_TIM3_Init();
-	MX_USART2_UART_Init();
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_ADC1_Init();
+  MX_SPI1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_USART2_UART_Init();
+  MX_I2C1_Init();
+  //MX_I2C2_Init();
 
-	/* USER CODE BEGIN 2 */
+  /* USER CODE BEGIN 2 */
 
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
@@ -142,15 +148,22 @@ int main(void)
 	LCD_BacklightOn();				//backlight
 	Sprite_ClearGameOverFlag();
 
-	/* USER CODE END 2 */
+	EEPROM_init();			//toggles the VCLK pin
+	Score_Init();			//clear the high score
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+
+	HAL_Delay(1000);
+
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		/* USER CODE END WHILE */
+  /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
 
 		///////////////////////////////////
 		//Game Over??
@@ -209,7 +222,7 @@ int main(void)
 
 	}
 
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 
 }
 
@@ -302,7 +315,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   //Timer3 - 11khz timer
   //Sound timer.  Runs when sound is playing.
   //Timer stops when sound array is done.
-  //See sound.h
+  //See sound.h.  NOTE: in tim.c, check the prescale
+  //and reload values as 15 and 362 to get 11khz.
   if (htim->Instance == TIM3)
   {
 	  Sound_InterruptHandler();      //main
