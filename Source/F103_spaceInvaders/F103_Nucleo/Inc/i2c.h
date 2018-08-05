@@ -52,7 +52,6 @@
 /* USER CODE END Includes */
 
 extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c2;
 
 /* USER CODE BEGIN Private defines */
 
@@ -61,7 +60,6 @@ extern I2C_HandleTypeDef hi2c2;
 extern void _Error_Handler(char *, int);
 
 void MX_I2C1_Init(void);
-void MX_I2C2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

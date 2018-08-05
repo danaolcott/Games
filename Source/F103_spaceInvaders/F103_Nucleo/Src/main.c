@@ -106,38 +106,37 @@ uint32_t gCounter = 0x00;
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+	/* MCU Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_SPI1_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_USART2_UART_Init();
-  MX_I2C1_Init();
-  //MX_I2C2_Init();
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_ADC1_Init();
+	MX_SPI1_Init();
+	MX_TIM2_Init();
+	MX_TIM3_Init();
+	MX_USART2_UART_Init();
+	MX_I2C1_Init();
 
-  /* USER CODE BEGIN 2 */
+	/* USER CODE BEGIN 2 */
 
 	/////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////
@@ -146,43 +145,84 @@ int main(void)
 	Sound_Init();					//timers and sound
 	Sprite_Init();					//game init
 	LCD_BacklightOn();				//backlight
-	Sprite_ClearGameOverFlag();
+	EEPROM_init();					//perform simple write/readback
 
-	EEPROM_init();			//toggles the VCLK pin
-	Score_Init();			//clear the high score
+	/////////////////////////////////////////////////
+	//Clear high score. comment out if not needed
+	//int result = Score_Init();
+	//if (result < 0)
+	//	while (1){};
+	//////////////////////////////////////////////////
+
+	Sprite_SetGameOverFlag();		//start with game over
+
+	HAL_Delay(500);
 
 
-	HAL_Delay(1000);
+	/* USER CODE END 2 */
 
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
-  /* USER CODE END WHILE */
+		/* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 
-		///////////////////////////////////
+		///////////////////////////////////////////////////
 		//Game Over??
         if (Sprite_GetGameOverFlag() == 1)
         {
 	        Sound_Play_GameOver();
-	        HAL_Delay(2000);
+
+			//evaluate the high score and current score
+			if (Sprite_GetGameScore() > Score_GetHighScore())
+			{
+				while(Sprite_GetGameOverFlag() == 1)
+				{
+					Score_DisplayNewHighScore(Sprite_GetGameScore(), Sprite_GetGameLevel());
+					HAL_Delay(1000);
+					LCD_Clear(0x00);
+					HAL_Delay(1000);
+				}
+
+				//update the high score and level here
+				Score_SetHighScore(Sprite_GetGameScore());
+				Score_SetMaxLevel(Sprite_GetGameLevel());
+
+				Sprite_SetGameOverFlag();
+			}
+
+			HAL_Delay(2000);
         }
 
-        ///////////////////////////////////////
-		//Game over flag - clear with button press
+
         while (Sprite_GetGameOverFlag() == 1)
         {
-	        LCD_DrawStringKern(2, 3, " Press Button");
-	        HAL_Delay(1000);
-	        LCD_DrawStringKern(2, 3, "                ");
-	        HAL_Delay(1000);
+			uint8_t buffer[SCORE_PLAYER_NAME_SIZE] = {0x00};
+			uint8_t buffer2[16] = {0x00};
+			uint16_t highScore = Score_GetHighScore();
+			uint8_t level = Score_GetMaxLevel();
+			uint8_t len = Score_GetPlayerName(buffer);
+
+			LCD_DrawStringKernLength(1, 3, buffer, len);
+
+			int n = sprintf((char*)buffer2, "Score:%d", highScore);
+			LCD_DrawStringKernLength(2, 3, buffer2, n);
+
+			n = sprintf((char*)buffer2, "Level:%d", level);
+			LCD_DrawStringKernLength(3, 3, buffer2, n);
+
+	        LCD_DrawStringKern(5, 3, " Press Button");
+
+			HAL_Delay(1000);
+			LCD_Clear(0x00);
+//	        LCD_DrawStringKern(2, 3, "                ");
+			HAL_Delay(1000);
+
 	        Sprite_Init();                  //reset and clear all flags
         }
+
 
         ///////////////////////////////////////////
         //launch any new missiles from player?
@@ -219,6 +259,7 @@ int main(void)
         gCounter++;
 
         HAL_Delay(200);
+
 
 	}
 

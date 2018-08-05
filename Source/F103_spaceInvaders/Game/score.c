@@ -104,7 +104,7 @@ int Score_SetMaxLevel(uint8_t level)
 	uint8_t readback = 0x00;
 
 	EEPROM_writeByte(SCORE_MAX_LEVEL_ADDRESS, value);		//write
-	readback = EEPROM_readByte(SCORE_MAX_LEVEL_ADDRESS);		//read back
+	readback = EEPROM_readByte(SCORE_MAX_LEVEL_ADDRESS);	//read back
 
 	if (readback != value)
 		return -1;
@@ -137,7 +137,7 @@ void Score_ClearMaxLevel(void)
 void Score_SetPlayerName(uint8_t* buffer, uint8_t len)
 {
 	uint8_t numWrites = len;
-	uint8_t temp = 0x00;
+
 	if (len > SCORE_PLAYER_NAME_SIZE)
 		numWrites = SCORE_PLAYER_NAME_SIZE;
 		

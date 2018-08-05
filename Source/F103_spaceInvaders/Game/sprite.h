@@ -155,6 +155,7 @@ void Sprite_ClearPlayerMissileLaunchFlag(void);
 
 uint8_t Sprite_GetGameOverFlag(void);
 void Sprite_ClearGameOverFlag(void);
+void Sprite_SetGameOverFlag(void);
 
 void Sprite_UpdateDisplay(void);
 void Sprite_Player_Draw(void);

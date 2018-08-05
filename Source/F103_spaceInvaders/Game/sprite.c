@@ -655,6 +655,10 @@ void Sprite_ClearGameOverFlag(void)
     mGameOverFlag = 0;
 }
 
+void Sprite_SetGameOverFlag(void)
+{
+    mGameOverFlag = 1;
+}
 
 
 

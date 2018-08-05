@@ -57,6 +57,8 @@
 #define DAC_Bit3_GPIO_Port GPIOB
 #define DAC_Bit4_Pin GPIO_PIN_2
 #define DAC_Bit4_GPIO_Port GPIOB
+#define SPI1_CS_Pin GPIO_PIN_10
+#define SPI1_CS_GPIO_Port GPIOB
 #define DAC_Bit0_Pin GPIO_PIN_13
 #define DAC_Bit0_GPIO_Port GPIOB
 #define DAC_Bit1_Pin GPIO_PIN_14
@@ -65,8 +67,10 @@
 #define DAC_Bit2_GPIO_Port GPIOB
 #define LCD_CMD_Pin GPIO_PIN_7
 #define LCD_CMD_GPIO_Port GPIOC
-#define memoryWP_Pin GPIO_PIN_9
-#define memoryWP_GPIO_Port GPIOC
+#define GPIO_PC8_Pin GPIO_PIN_8
+#define GPIO_PC8_GPIO_Port GPIOC
+#define GPIO_PC9_Pin GPIO_PIN_9
+#define GPIO_PC9_GPIO_Port GPIOC
 #define LCD_Backlight_Pin GPIO_PIN_8
 #define LCD_Backlight_GPIO_Port GPIOA
 #define LCD_Reset_Pin GPIO_PIN_9
@@ -74,16 +78,18 @@
 #define shieldButton_Pin GPIO_PIN_10
 #define shieldButton_GPIO_Port GPIOA
 #define shieldButton_EXTI_IRQn EXTI15_10_IRQn
-#define memoryVCLK_Pin GPIO_PIN_11
-#define memoryVCLK_GPIO_Port GPIOC
+#define GPIO_PC10_Pin GPIO_PIN_10
+#define GPIO_PC10_GPIO_Port GPIOC
+#define GPIO_PC11_Pin GPIO_PIN_11
+#define GPIO_PC11_GPIO_Port GPIOC
 #define GPIO_D3_Pin GPIO_PIN_3
 #define GPIO_D3_GPIO_Port GPIOB
 #define GPIO_D5_Pin GPIO_PIN_4
 #define GPIO_D5_GPIO_Port GPIOB
 #define GPIO_D4_Pin GPIO_PIN_5
 #define GPIO_D4_GPIO_Port GPIOB
-#define SPI1_CS_Pin GPIO_PIN_6
-#define SPI1_CS_GPIO_Port GPIOB
+//#define SPI1_CSB6_Pin GPIO_PIN_6
+//#define SPI1_CSB6_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
