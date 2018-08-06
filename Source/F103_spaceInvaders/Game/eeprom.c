@@ -44,7 +44,7 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "eeprom.h"
-
+#include "lcd_12864_dfrobot.h"			//backlight toggle
 
 /////////////////////////////////////////////
 //EEPROM_DummyDelay(uint32_t)
@@ -65,11 +65,17 @@ void EEPROM_init(void)
 {
 	uint8_t data = 0xAA;
 	EEPROM_writeByte(EEPROM_TEST_ADDR, data);
+	HAL_Delay(50);
 	uint8_t result = EEPROM_readByte(EEPROM_TEST_ADDR);
 
 	if (data != result)
 	{
-		while(1){};
+		while(1)
+		{
+			//toggle the backlight
+			LCD_BacklightToggle();
+			EEPROM_DummyDelay(4000000);
+		};
 	}
 }
 
@@ -83,7 +89,7 @@ void EEPROM_writeByte(uint16_t address, uint8_t data)
 {
 	uint8_t tx = data;
 	HAL_I2C_Mem_Write(&hi2c1, 0xA0, address, 1, &tx, 1, 0xFFFF);
-	EEPROM_DummyDelay(200000);
+	EEPROM_DummyDelay(400000);
 
 }
 
@@ -94,7 +100,7 @@ uint8_t EEPROM_readByte(uint16_t address)
 {
 	uint8_t rx = 0x00;
 	HAL_I2C_Mem_Read(&hi2c1, 0xA0, address, 1, &rx, 1, 0xFFFF);
-	EEPROM_DummyDelay(200000);
+	EEPROM_DummyDelay(400000);
 	return rx;
 }
 
@@ -105,7 +111,7 @@ uint8_t EEPROM_readByte(uint16_t address)
 void EEPROM_writeMultiByte(uint16_t address, uint8_t* data, uint8_t len)
 {
 	HAL_I2C_Mem_Write(&hi2c1, 0xA0, address, 1, data, len, 0xFFFF);
-	EEPROM_DummyDelay(200000);
+	EEPROM_DummyDelay(400000);
 }
 
 
@@ -114,7 +120,7 @@ void EEPROM_writeMultiByte(uint16_t address, uint8_t* data, uint8_t len)
 void EEPROM_readMultiByte(uint16_t address, uint8_t* data, uint8_t len)
 {
 	HAL_I2C_Mem_Read(&hi2c1, 0xA0, address, 1, data, len, 0xFFFF);
-	EEPROM_DummyDelay(200000);
+	EEPROM_DummyDelay(400000);
 }
 
 

@@ -145,6 +145,9 @@ int main(void)
 	Sound_Init();					//timers and sound
 	Sprite_Init();					//game init
 	LCD_BacklightOn();				//backlight
+
+	//wait a bit
+	HAL_Delay(100);
 	EEPROM_init();					//perform simple write/readback
 
 	/////////////////////////////////////////////////
