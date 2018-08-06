@@ -46,7 +46,8 @@ GND -
 
 static uint8_t* waveData;
 static uint32_t waveCounter;
-static void Sound_PlaySound(const SoundData *sound);
+static uint8_t mSoundFlag = 0x00;		//prevent overwrites
+static void Sound_PlaySound(const SoundData *sound, uint8_t preventOverwrite);
 static void Sound_DAC_Write(uint8_t value);
 
 //////////////////////////////////////////////
@@ -57,6 +58,7 @@ static void Sound_DAC_Write(uint8_t value);
 //
 void Sound_Init(void)
 {
+	mSoundFlag = 0x00;
 	HAL_TIM_Base_Stop_IT(&htim3);		//timer3 off
 	Sound_DAC_Write(0x00);				//set all bits low
 }
@@ -80,6 +82,7 @@ void Sound_InterruptHandler(void)
 
 	else
 	{
+		mSoundFlag = 0x00;					//clear sound playing flag
 		HAL_TIM_Base_Stop_IT(&htim3);		//timer3 off
 		Sound_DAC_Write(0x00);
 	}
@@ -93,11 +96,28 @@ void Sound_InterruptHandler(void)
 //the timer.  Sound data is played in the timer
 //ISR until the sound array is finished playing.
 //
-void Sound_PlaySound(const SoundData *sound)
+static void Sound_PlaySound(const SoundData *sound, uint8_t preventOverwrite)
 {
-	waveData = (uint8_t*)sound->pSoundData;		//set the pointer
-	waveCounter = sound->length;				//init counter
-	HAL_TIM_Base_Start_IT(&htim3);				//start the timer
+	//if prevent overwrite and no flag is set - start the sound
+	if ((preventOverwrite == 1) && (!mSoundFlag))
+	{
+		mSoundFlag = 1;								//set the sound flag
+		waveData = (uint8_t*)sound->pSoundData;		//set the pointer
+		waveCounter = sound->length;				//init counter
+		HAL_TIM_Base_Start_IT(&htim3);				//start the timer
+	}
+
+	////////////////////////////////////////////////
+	//No current sound with prevent overwrite - allow
+	//sound to start, but don't set the sound flag -
+	//ie, allow overwrites
+	else if (!mSoundFlag)
+	{
+		waveData = (uint8_t*)sound->pSoundData;		//set the pointer
+		waveCounter = sound->length;				//init counter
+		HAL_TIM_Base_Start_IT(&htim3);				//start the timer
+	}
+
 }
 
 
@@ -121,31 +141,31 @@ void Sound_DAC_Write(uint8_t value)
 
 void Sound_Play_PlayerFire(void)
 {
-	Sound_PlaySound(&wavSoundPlayerFire);
+	Sound_PlaySound(&wavSoundPlayerFire, 0);
 }
 void Sound_Play_EnemyFire(void)
 {
-	Sound_PlaySound(&wavSoundEnemyFire);
+	Sound_PlaySound(&wavSoundEnemyFire, 0);
 }
 
 void Sound_Play_PlayerExplode(void)
 {
-	Sound_PlaySound(&wavSoundPlayerExplode);
+	Sound_PlaySound(&wavSoundPlayerExplode, 1);
 }
 
 void Sound_Play_EnemyExplode(void)
 {
-	Sound_PlaySound(&wavSoundEnemyExplode);
+	Sound_PlaySound(&wavSoundEnemyExplode, 0);
 }
 
 void Sound_Play_GameOver(void)
 {
-	Sound_PlaySound(&wavSoundPlayerExplode);
+	Sound_PlaySound(&wavSoundPlayerExplode, 1);
 }
 
 void Sound_Play_LevelUp(void)
 {
-	Sound_PlaySound(&wavSoundLevelUp);
+	Sound_PlaySound(&wavSoundLevelUp, 1);
 }
 
 
