@@ -28,7 +28,7 @@ drone image 24x10
 #include "Sound.h"
 
 //player, enemy, missle
-static PlayerStruct mPlayer;
+volatile PlayerStruct mPlayer;
 static EnemyStruct mEnemy[NUM_ENEMY];
 static MissileStruct mEnemyMissile[NUM_MISSILE];
 static MissileStruct mPlayerMissile[NUM_MISSILE];
@@ -373,7 +373,7 @@ void Sprite_Missle_Move(void)
         //enemy missile - these go all the way to the bottom
         //of the screen - LCD_HEIGHT
         if ((mEnemyMissile[i].life == 1) && ((mEnemyMissile[i].y + mEnemyMissile[i].sizeY) < LCD_HEIGHT))
-            mEnemyMissile[i].y++;
+            mEnemyMissile[i].y+=2;
 
         //enemy missile off the screen?
         if ((mEnemyMissile[i].life == 1) && ((mEnemyMissile[i].y + mEnemyMissile[i].sizeY) >= LCD_HEIGHT))

@@ -152,9 +152,9 @@ int main(void)
 
 	/////////////////////////////////////////////////
 	//Clear high score. comment out if not needed
-	//int result = Score_Init();
-	//if (result < 0)
-	//	while (1){};
+//	int result = Score_Init();
+//	if (result < 0)
+//		while (1){};
 	//////////////////////////////////////////////////
 
 	Sprite_SetGameOverFlag();		//start with game over
