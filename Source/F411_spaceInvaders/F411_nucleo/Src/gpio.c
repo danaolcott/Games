@@ -40,6 +40,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
 /* USER CODE BEGIN 0 */
+#include "sprite.h"
 
 /* USER CODE END 0 */
 
@@ -125,22 +126,32 @@ void MX_GPIO_Init(void)
 
 
 
-/////////////////////////////////////////////
-//EXTI Line Interrupt Callbacks
+/////////////////////////////////////////////////////////
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	//toggle D5
 	if (GPIO_Pin == userButton_Pin)
 	{
-		HAL_GPIO_TogglePin(GPIO_D5_GPIO_Port, GPIO_D5_Pin);
+		//toggle the backlight
+		HAL_GPIO_TogglePin(LCD_Backlight_GPIO_Port, LCD_Backlight_Pin);
 	}
 
-	//toggle D5
+	////////////////////////////////////////////////
+	//Set Missle flags or clear gameover flags
 	if (GPIO_Pin == shieldButton_Pin)
 	{
-		HAL_GPIO_TogglePin(GPIO_D5_GPIO_Port, GPIO_D5_Pin);
+		if (Sprite_GetGameOverFlag() == 1)
+		{
+			Sprite_ClearGameOverFlag();
+		}
+
+		else
+		{
+			Sprite_SetPlayerMissileLaunchFlag();
+		}
 	}
 }
+
+
 /* USER CODE END 2 */
 
 /**

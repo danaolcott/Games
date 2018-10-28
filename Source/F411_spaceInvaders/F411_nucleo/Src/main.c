@@ -46,6 +46,13 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+#include "lcd_12864_dfrobot.h"
+#include "sprite.h"
+#include "Sound.h"
+#include "joystick.h"
+#include "bitmap.h"
+#include "eeprom.h"
+#include "score.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -87,93 +94,172 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+uint32_t gCounter = 0x00;
 
 /* USER CODE END 0 */
 
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+	/* MCU Configuration----------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_SPI1_Init();
-  MX_I2C1_Init();
-  MX_ADC1_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_SPI1_Init();
+	MX_I2C1_Init();
+	MX_ADC1_Init();
+	MX_TIM2_Init();
+	MX_TIM3_Init();
 
-  /* USER CODE BEGIN 2 */
+	/* USER CODE BEGIN 2 */
+	/////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
+	LCD_Config();					//config 128x64 display
+	Joystick_Config();				//DMA stream for ADC - A1
+	Sound_Init();					//timers and sound
+	Sprite_Init();					//game init
+	LCD_BacklightOn();				//backlight
 
-  //start the timers - toggles D3 and D4
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_TIM_Base_Start_IT(&htim3);
+	//wait a bit
+	HAL_Delay(100);
 
-  volatile uint32_t adcReading[2] = {0x00};
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcReading, 2);
+	EEPROM_init();					//perform simple write/readback
 
+	/////////////////////////////////////////////////
+	//Clear high score. comment out if not needed
+	//	int result = Score_Init();
+	//	if (result < 0)
+	//		while (1){};
+	//////////////////////////////////////////////////
 
-  /* USER CODE END 2 */
+	Sprite_SetGameOverFlag();		//start with game over
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-
-	  //toggle LCD Pins
-	  HAL_GPIO_TogglePin(LCD_Backlight_GPIO_Port, LCD_Backlight_Pin);
-	  HAL_GPIO_TogglePin(LCD_CMD_GPIO_Port, LCD_CMD_Pin);
-	  HAL_GPIO_TogglePin(LCD_Reset_GPIO_Port, LCD_Reset_Pin);
-
-	  //toggle SPI pins
-	  HAL_GPIO_TogglePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin);
-
-	  //toggle DAC pins
-	  HAL_GPIO_TogglePin(DAC_Bit0_GPIO_Port, DAC_Bit0_Pin);
-	  HAL_GPIO_TogglePin(DAC_Bit1_GPIO_Port, DAC_Bit1_Pin);
-	  HAL_GPIO_TogglePin(DAC_Bit2_GPIO_Port, DAC_Bit2_Pin);
-	  HAL_GPIO_TogglePin(DAC_Bit3_GPIO_Port, DAC_Bit3_Pin);
-	  HAL_GPIO_TogglePin(DAC_Bit4_GPIO_Port, DAC_Bit4_Pin);
-
-	  //send AA over SPI1
-	  uint8_t tx = 0xAA;
-	  HAL_SPI_Transmit(&hspi1, &tx, 1, 0xFFF);
-
-	  //test the value in the adc readings
-	  if (adcReading[0] == adcReading[1])
-	  {
-		  HAL_Delay(100);
-	  }
-
-
-	  HAL_Delay(100);
+	HAL_Delay(500);
 
 
 
-  }
-  /* USER CODE END 3 */
+
+	/* USER CODE END 2 */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
+		/* USER CODE END WHILE */
+
+		/* USER CODE BEGIN 3 */
+
+		///////////////////////////////////////////////////
+		//Game Over??
+		if (Sprite_GetGameOverFlag() == 1)
+		{
+			Sound_Play_GameOver();
+
+			//evaluate the high score and current score
+			if (Sprite_GetGameScore() > Score_GetHighScore())
+			{
+				while(Sprite_GetGameOverFlag() == 1)
+				{
+					Score_DisplayNewHighScore(Sprite_GetGameScore(), Sprite_GetGameLevel());
+					HAL_Delay(1000);
+					LCD_Clear(0x00);
+					HAL_Delay(1000);
+				}
+
+				//update the high score and level here
+				Score_SetHighScore(Sprite_GetGameScore());
+				Score_SetMaxLevel(Sprite_GetGameLevel());
+
+				Sprite_SetGameOverFlag();
+			}
+
+			HAL_Delay(2000);
+		}
+
+
+		while (Sprite_GetGameOverFlag() == 1)
+		{
+			uint8_t buffer[SCORE_PLAYER_NAME_SIZE] = {0x00};
+			uint8_t buffer2[16] = {0x00};
+			uint16_t highScore = Score_GetHighScore();
+			uint8_t level = Score_GetMaxLevel();
+			uint8_t len = Score_GetPlayerName(buffer);
+
+			LCD_DrawStringKernLength(1, 3, buffer, len);
+
+			int n = sprintf((char*)buffer2, "Score:%d", highScore);
+			LCD_DrawStringKernLength(2, 3, buffer2, n);
+
+			n = sprintf((char*)buffer2, "Level:%d", level);
+			LCD_DrawStringKernLength(3, 3, buffer2, n);
+
+			LCD_DrawStringKern(5, 3, " Press Button");
+
+			HAL_Delay(1000);
+			LCD_Clear(0x00);
+			HAL_Delay(1000);
+
+			Sprite_Init();                  //reset and clear all flags
+		}
+
+
+		  ///////////////////////////////////////////
+		  //launch any new missiles from player?
+		  if (Sprite_GetPlayerMissileLaunchFlag() == 1)
+		  {
+				Sprite_ClearPlayerMissileLaunchFlag();  //clear flag
+				Sprite_Player_Missle_Launch();          //launch missile
+		  }
+
+		  ////////////////////////////////////////////
+		  //launch any new missiles from enemy
+		  uint16_t interval = 30 - (2 * Sprite_GetGameLevel());
+		  if (interval < 5)
+			  interval = 5;
+
+		  if (!(gCounter % interval))
+		  {
+			  Sprite_Enemy_Missle_Launch();
+		  }
+
+		  ////////////////////////////////////////////////
+		  //launch drone - every 20 game cycles
+		  if (!(gCounter % 20))
+		  {
+			  Sprite_Drone_Launch();
+		  }
+
+		  Sprite_Player_Move();		//move player
+		  Sprite_Enemy_Move();		//move enemy
+		  Sprite_Missle_Move();		//move missle
+		  Sprite_Drone_Move();		//move the drone
+		  Sprite_UpdateDisplay();	//update the display
+
+		  gCounter++;
+
+		  HAL_Delay(200);
+	}
+
+	/* USER CODE END 3 */
 
 }
 
@@ -255,19 +341,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 /* USER CODE BEGIN Callback 1 */
 
-  //interrupts at about 1000hz.
+  ////////////////////////////////////////////
+  //Timer TIM2 - Not Used For Now
   if (htim->Instance == TIM2)
   {
-	  //toggle D3
-	  HAL_GPIO_TogglePin(GPIO_D3_GPIO_Port, GPIO_D3_Pin);
+
   }
 
-  //interrupts at about 11000hz
+  //////////////////////////////////////
+  //Timer3 - 11khz timer
+  //Sound timer.  Runs when sound is playing.
+  //Timer stops when sound array is done.
+  //See sound.h.  NOTE: in tim.c, check the prescale
+  //and reload values as 15 and 362 to get 11khz.
   if (htim->Instance == TIM3)
   {
-	  //toggle D4
-	  HAL_GPIO_TogglePin(GPIO_D4_GPIO_Port, GPIO_D4_Pin);
+	  Sound_InterruptHandler();      //main
   }
+
 
 /* USER CODE END Callback 1 */
 }
