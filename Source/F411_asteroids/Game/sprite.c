@@ -126,15 +126,15 @@ void Sprite_Astroid_Init(SpriteSpeed_t speed)
     	uint32_t offset = rand() % (9 + 1 - 4) + 4;		//random offset
 
 		mAstroid[count].life = 1;                           //life - 1 = alive, 0 = dead
-		mAstroid[count].image = &imageEnemy1;             		//pointer to image data
+		mAstroid[count].image = &bmimgAsteroidMDBmp;             		//pointer to image data
 		mAstroid[count].points = 30;                        //points
 		mAstroid[count].x = left;              				//x position
-		mAstroid[count].y = i * (imageEnemy1.ySize + offset); 	//y position
-		mAstroid[count].sizeX = imageEnemy1.xSize;        		//image width
-		mAstroid[count].sizeY = imageEnemy1.ySize;        		//image height
+		mAstroid[count].y = i * (bmimgAsteroidMDBmp.ySize + offset); 	//y position
+		mAstroid[count].sizeX = bmimgAsteroidMDBmp.xSize;        		//image width
+		mAstroid[count].sizeY = bmimgAsteroidMDBmp.ySize;        		//image height
 		mAstroid[count].bearing = BEARING_0;   				//initial direction
 		mAstroid[count].speed = speed;						//initial speed
-		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
+		mAstroid[count].size = ASTROID_SIZE_MEDIUM;     		//moving down
 
 		count++;
     }
@@ -145,18 +145,73 @@ void Sprite_Astroid_Init(SpriteSpeed_t speed)
     	uint32_t offset = rand() % (9 + 1 - 4) + 4;		//random offset
 
 		mAstroid[count].life = 1;                           //life - 1 = alive, 0 = dead
-		mAstroid[count].image = &imageEnemy1;             		//pointer to image data
+		mAstroid[count].image = &bmimgAsteroidMDBmp;             		//pointer to image data
 		mAstroid[count].points = 30;                        //points
 		mAstroid[count].x = right;              			//x position
-		mAstroid[count].y = i * (imageEnemy1.ySize + offset); 	//y position
-		mAstroid[count].sizeX = imageEnemy1.xSize;        		//image width
-		mAstroid[count].sizeY = imageEnemy1.ySize;        		//image height
+		mAstroid[count].y = i * (bmimgAsteroidMDBmp.ySize + offset); 	//y position
+		mAstroid[count].sizeX = bmimgAsteroidMDBmp.xSize;        		//image width
+		mAstroid[count].sizeY = bmimgAsteroidMDBmp.ySize;        		//image height
 		mAstroid[count].bearing = BEARING_180;   			//initial direction
 		mAstroid[count].speed = speed;						//initial speed
-		mAstroid[count].size = ASTROID_SIZE_SMALL;     		//moving down
+		mAstroid[count].size = ASTROID_SIZE_MEDIUM;     		//moving down
 
 		count++;
     }
+
+    //for all asteroids, randomly resize and assign speed
+    //according to size.
+    for (int i = 0 ; i < NUM_ASTROID ; i++)
+    {
+    	uint32_t size = rand() % 3;		//random size
+    	uint32_t sp = rand() % 3;		//random speed
+
+    	//size
+    	switch(size)
+    	{
+			case 0:
+			{
+				mAstroid[i].image = &bmimgAsteroidSMBmp;
+				mAstroid[i].sizeX = bmimgAsteroidSMBmp.xSize;
+				mAstroid[i].sizeY = bmimgAsteroidSMBmp.ySize;
+				mAstroid[i].size = ASTROID_SIZE_SMALL;
+				break;
+			}
+			case 1:
+			{
+				mAstroid[i].image = &bmimgAsteroidMDBmp;
+				mAstroid[i].sizeX = bmimgAsteroidMDBmp.xSize;
+				mAstroid[i].sizeY = bmimgAsteroidMDBmp.ySize;
+				mAstroid[i].size = ASTROID_SIZE_MEDIUM;
+				break;
+			}
+			case 2:
+			{
+				mAstroid[i].image = &bmimgAsteroidLGBmp;
+				mAstroid[i].sizeX = bmimgAsteroidLGBmp.xSize;
+				mAstroid[i].sizeY = bmimgAsteroidLGBmp.ySize;
+				mAstroid[i].size = ASTROID_SIZE_LARGE;
+				break;
+			}
+			default:
+			{
+				mAstroid[i].image = &bmimgAsteroidMDBmp;
+				mAstroid[i].sizeX = bmimgAsteroidMDBmp.xSize;
+				mAstroid[i].sizeY = bmimgAsteroidMDBmp.ySize;
+				mAstroid[i].size = ASTROID_SIZE_MEDIUM;
+				break;
+			}
+    	}
+
+    	//speed
+    	switch(sp)
+    	{
+			case 0: 	mAstroid[i].speed = SPRITE_SPEED_SLOW;		break;
+			case 1: 	mAstroid[i].speed = SPRITE_SPEED_MEDIUM;	break;
+			case 2: 	mAstroid[i].speed = SPRITE_SPEED_FAST;		break;
+			default:	mAstroid[i].speed = SPRITE_SPEED_SLOW;		break;
+    	}
+    }
+
 }
 
 
@@ -700,23 +755,20 @@ int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 	switch(rotation)
 	{
 		case SPRITE_DIRECTION_0:	dx =  mPlayer.sizeX;				break;
-//		case SPRITE_DIRECTION_26:	dx =  mPlayer.sizeX + offset;		break;
 		case SPRITE_DIRECTION_26:	dx =  mPlayer.sizeX;				break;
 		case SPRITE_DIRECTION_45:	dx =  mPlayer.sizeX;				break;
 		case SPRITE_DIRECTION_63:	dx =  mPlayer.sizeX /2 + offset;	break;
 		case SPRITE_DIRECTION_90:	dx =  mPlayer.sizeX /2;				break;
-		case SPRITE_DIRECTION_116:	dx =  mPlayer.sizeX /2;			break;
-//		case SPRITE_DIRECTION_116:	dx = offset;						break;
-
+		case SPRITE_DIRECTION_116:	dx =  mPlayer.sizeX /2;				break;
 		case SPRITE_DIRECTION_135:	dx = -1 * (offset / 2);				break;
 
-		case SPRITE_DIRECTION_153:	dx = -1 * offset / 2;					break;
-		case SPRITE_DIRECTION_180:	dx = -1 * offset / 2;					break;
+		case SPRITE_DIRECTION_153:	dx = -1 * offset / 2;				break;
+		case SPRITE_DIRECTION_180:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_206:	dx = -1 * offset / 2;				break;
-		case SPRITE_DIRECTION_225:	dx = -1 * offset;					break;
+		case SPRITE_DIRECTION_225:	dx = 0;								break;
 		case SPRITE_DIRECTION_243:	dx = 0;								break;
 		case SPRITE_DIRECTION_270:	dx = mPlayer.sizeX / 2;				break;
-		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX - offset;		break;
+		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX - (offset / 2);	break;
 		case SPRITE_DIRECTION_315:	dx = mPlayer.sizeX - offset;		break;
 		case SPRITE_DIRECTION_333:	dx = mPlayer.sizeX;					break;
 		default:					dx = 0;								break;

@@ -43,6 +43,10 @@ extern const ImageData bmimgPlayer296Bmp;
 extern const ImageData bmimgPlayer315Bmp;
 extern const ImageData bmimgPlayer333Bmp;
 
+extern const ImageData bmimgAsteroidSMBmp;
+extern const ImageData bmimgAsteroidMDBmp;
+extern const ImageData bmimgAsteroidLGBmp;
+
 
 //TODO: Add images for player at various orientations
 
