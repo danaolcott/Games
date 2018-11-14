@@ -38,8 +38,6 @@ static uint8_t mMissileLaunchFlag;			//missile launch
 static uint8_t mPlayerThrustFlag;			//fire thrusters
 static uint8_t mPlayerSpecialEventFlag;		//special event flag
 
-static uint8_t mActiveDisplayLayer;			//flip btw 2 layers for drawing
-
 static uint32_t mGameScore;
 static uint8_t mGameLevel;
 static uint8_t mGameOverFlag;
@@ -71,8 +69,6 @@ void Sprite_Init(void)
     mMissileLaunchFlag = 0x00;			//missile launch
     mPlayerThrustFlag = 0x00;			//fire thrusters
     mPlayerSpecialEventFlag = 0x00;		//special event flag
-
-    mActiveDisplayLayer = 0x00;			//initial display layer
 
     mGameScore = 0x00;
     mGameLevel = 1;
@@ -664,6 +660,30 @@ int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 
 	mGameScore += mAstroid[astroidIndex].points;	//get points if you get hit
 
+	AstroidSize_t size = ASTROID_SIZE_SMALL;
+
+	switch(mAstroid[astroidIndex].size)
+	{
+		case ASTROID_SIZE_SMALL:
+		{
+			break;
+		}
+		case ASTROID_SIZE_MEDIUM:
+		{
+			break;
+		}
+		case ASTROID_SIZE_LARGE:
+		{
+			break;
+		}
+		default:
+		{
+			break;
+		}
+
+	}
+
+
 	//remove astroid and set x and y 0
 	mAstroid[astroidIndex].life = 0;
 	mAstroid[astroidIndex].x = 0;
@@ -691,16 +711,18 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 {
 	Sound_Play_PlayerExplode();
 
-	//draw player exp0 - update RAM
-	//delay;
-	//draw player exp1 - update RAM
-	//delay;
-	//draw player exp2 - update RAM
-	//delay;
-	//draw player exp3 - update RAM
-	//delay;
-	//draw player exp4 - update RAM
-	//delay;
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp1Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp2Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp3Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp4Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp5Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp6Bmp, 1);		//refresh
+	Sprite_DummyDelay(10000);
 
 	//remove the astroid
 	mGameScore += mAstroid[astroidIndex].points;		//get points if you get hit
@@ -761,7 +783,6 @@ int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 		case SPRITE_DIRECTION_90:	dx =  mPlayer.sizeX /2;				break;
 		case SPRITE_DIRECTION_116:	dx =  mPlayer.sizeX /2;				break;
 		case SPRITE_DIRECTION_135:	dx = -1 * (offset / 2);				break;
-
 		case SPRITE_DIRECTION_153:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_180:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_206:	dx = -1 * offset / 2;				break;
