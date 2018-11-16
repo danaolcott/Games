@@ -159,8 +159,38 @@ typedef struct
 	uint32_t size;
     SpriteDirection_t direction;
     SpriteSpeed_t speed;
-
 }MissileStruct;
+
+
+
+////////////////////////////////////////////////
+//Drone type - different drones move differently
+//and speed, and images
+typedef enum
+{
+	DRONE_TYPE_SMALL,
+	DRONE_TYPE_MEDIUM,
+	DRONE_TYPE_LARGE
+}DroneType_t;
+
+///////////////////////////////////////////////
+//Drone struct - chases the player around
+//TODO: Add drone into game
+
+typedef struct
+{
+	uint8_t life;
+	DroneType_t type;
+	uint32_t x;
+	uint32_t y;
+	const ImageData* image;
+	uint32_t sizeX;
+	uint32_t sizeY;
+	uint16_t points;
+}DroneStruct;
+
+
+
 
 
 
@@ -170,10 +200,14 @@ void Sprite_Init(void);
 void Sprite_Player_Init(void);
 void Sprite_Astroid_Init(SpriteSpeed_t speed);
 void Sprite_Missile_Init(void);
+void Sprite_Drone_Init(void);
 
 void Sprite_Player_Move(void);
 void Sprite_Astroid_Move(void);
 void Sprite_Missile_Move(void);
+void Sprite_Drone_Move(void);
+
+void Sprite_Drone_Launch(DroneType_t type);
 
 void Sprite_Missile_Launch(void);
 int Sprite_GetNextMissile(void);
@@ -183,8 +217,11 @@ uint8_t Sprite_GetMissileLaunchFlag(void);
 void Sprite_ClearMissileLaunchFlag(void);
 
 int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex);
+int Sprite_Missile_ScoreDroneHit(uint8_t missileIndex);
+
 
 int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex);
+int Sprite_Drone_ScorePlayerHit(void);
 
 
 int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteSpeed_t speed);
@@ -195,6 +232,8 @@ uint8_t Sprite_GetNumPlayers(void);
 int Sprite_GetNumAstroid(void);
 
 int Sprite_GetRandomAstroid(void);
+
+int Sprite_GetNewAstroidIndex(void);
 
 int Sprite_WormHole(void);
 
@@ -208,6 +247,7 @@ void Sprite_DisplayGameOver(void);
 void Sprite_Player_Draw(void);
 void Sprite_Astroid_Draw(void);
 void Sprite_Missle_Draw(void);
+void Sprite_Drone_Draw(void);
 
 //player
 int Sprite_GetDX_FromDirection(SpriteDirection_t direction, SpriteSpeed_t speed);

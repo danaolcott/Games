@@ -40,6 +40,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "gpio.h"
 /* USER CODE BEGIN 0 */
+#include "sprite.h"				//flags for button presses
 
 /* USER CODE END 0 */
 

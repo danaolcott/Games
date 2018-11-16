@@ -36,6 +36,10 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+
+#include <stdlib.h>
+
+
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "adc.h"
@@ -80,7 +84,6 @@ int main(void)
 {
 
 	/* USER CODE BEGIN 1 */
-//TODO: complete image processing:   https://onlineimagetools.com/rotate-image
 
 	/* USER CODE END 1 */
 
@@ -196,18 +199,27 @@ int main(void)
 			{
 
 			}
-
 		}
 
-
-
-
-
-
+		//launch a drone ever 50 game loops
+		if (!(gCounter % 50))
+		{
+			//random number 0 -2, launch the appropriate drone
+			int result = rand() % 3;
+			switch (result)
+			{
+				case 0: 	Sprite_Drone_Launch(DRONE_TYPE_SMALL);	break;
+				case 1: 	Sprite_Drone_Launch(DRONE_TYPE_MEDIUM);	break;
+				case 2: 	Sprite_Drone_Launch(DRONE_TYPE_LARGE);	break;
+				default:	Sprite_Drone_Launch(DRONE_TYPE_SMALL);	break;
+			}
+		}
 
 		Sprite_Player_Move();		//move player
 		Sprite_Astroid_Move();		//move enemy
 		Sprite_Missile_Move();		//move missle
+		Sprite_Drone_Move();		//move the drone if there is one
+
 		Sprite_UpdateDisplay();	//update the display
 
 		gCounter++;

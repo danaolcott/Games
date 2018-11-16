@@ -31,6 +31,9 @@ drone image 24x10
 static PlayerStruct mPlayer;
 static AstroidStruct mAstroid[NUM_ASTROID];
 static MissileStruct mMissile[NUM_MISSILE];
+static DroneStruct mDrone;
+
+
 
 //flags - polled in main loop
 static uint8_t mMissileLaunchFlag;			//missile launch
@@ -78,6 +81,8 @@ void Sprite_Init(void)
     Sprite_Player_Init();				//init sprites
     Sprite_Astroid_Init(SPRITE_SPEED_MEDIUM);
     Sprite_Missile_Init();
+    Sprite_Drone_Init();
+
 }
 
 
@@ -228,6 +233,24 @@ void Sprite_Missile_Init(void)
         mMissile[i].speed = SPRITE_SPEED_STOP;
     }
 }
+
+
+//////////////////////////////////////////////
+//Drone init - configure the image, initial x,
+//y, size, etc.  Keep life = 0
+//
+void Sprite_Drone_Init(void)
+{
+	mDrone.life = 0x00;				//no drone
+	mDrone.type = DRONE_TYPE_MEDIUM;
+	mDrone.x = 0x00;
+	mDrone.y = 0x00;
+	mDrone.image = &bmimgDroneMDBmp;
+	mDrone.sizeX = bmimgDroneMDBmp.xSize;
+	mDrone.sizeY = bmimgDroneMDBmp.ySize;
+	mDrone.points = 100;
+}
+
 
 
 
@@ -556,9 +579,200 @@ void Sprite_Missile_Move(void)
 					}
     			}
     		}		//end of astroid loop
+
+    		//check to see if it hit the drone
+    		if (mDrone.life == 1)
+    		{
+				mX = mMissile[i].x + mMissile[i].size / 2;	//use center of the blob
+				mY = mMissile[i].y + mMissile[i].size / 2;	//use center of the blob
+
+				bot = mDrone.y + mDrone.sizeY - ASTROID_IMAGE_PADDING;
+				top = mDrone.y + ASTROID_IMAGE_PADDING;
+				left = mDrone.x + ASTROID_IMAGE_PADDING;
+				right = mDrone.x + mDrone.sizeX - ASTROID_IMAGE_PADDING;
+
+				//tip of the missile in the enemy box?
+				if ((mX >= left) && (mX <= right) && (mY <= bot) && (mY >= top))
+				{
+					//score hit!! - pass missile index to score hit on the drone
+					Sprite_Missile_ScoreDroneHit(i);
+				}
+    		}
 		}
     }
 }
+
+
+
+
+
+
+
+//////////////////////////////////////////////////
+//Drone move
+//Movements depend on the drone type - SM, MD, LG
+//
+//alternating x and y based on player x and y
+void Sprite_Drone_Move(void)
+{
+	uint32_t targetX = mPlayer.x;
+	uint32_t targetY = mPlayer.y;
+	uint32_t dy = 1;
+	uint32_t dx = 1;
+
+	uint32_t pX, pY, aTop, aBot, aLeft, aRight = 0x00;
+
+	if (mDrone.life == 1)
+	{
+		switch(mDrone.type)
+		{
+			case DRONE_TYPE_SMALL:
+			{
+				dx = 1;
+				dy = 1;
+				break;
+			}
+
+			case DRONE_TYPE_MEDIUM:
+			{
+				dx = 2;
+				dy = 1;
+				break;
+			}
+
+			case DRONE_TYPE_LARGE:
+			{
+				dx = 2;
+				dy = 2;
+				break;
+			}
+
+			default:
+			{
+				dx = 1;
+				dy = 1;
+				break;
+			}
+		}
+
+
+		if (targetX >= mDrone.x)
+		{
+			if (mDrone.x < LCD_WIDTH - dx - 1)
+				mDrone.x += dx;
+			else
+				mDrone.x = 0;			//wrap
+		}
+
+		else
+		{
+			if (mDrone.x > dx)
+				mDrone.x -= dx;
+			else
+				mDrone.x = LCD_WIDTH - dx - 1;
+		}
+
+		if (targetY >= mDrone.y)
+		{
+			if (mDrone.y < LCD_HEIGHT - dy - 1)
+				mDrone.y += dy;
+			else
+				mDrone.y = 0;
+		}
+
+		else
+		{
+			if (mDrone.y > dy)
+				mDrone.y -= dy;
+			else
+				mDrone.y = LCD_HEIGHT - dy - 1;
+		}
+
+
+		//check to see if the drone hit the player
+		//////////////////////////////////////////////
+		//Collisions - Astroid Hit Player?
+		//astroid index i, center of player
+		//in the footprint of the astroid
+
+		pX = mPlayer.x + mPlayer.sizeX / 2;
+		pY = mPlayer.y + mPlayer.sizeY / 2;
+
+		//center of the player has to be in the footprint of the drone
+		aTop = mDrone.y;
+		aBot = mDrone.y + mDrone.sizeY;
+		aLeft = mDrone.x;
+		aRight = mDrone.x + mDrone.sizeX;
+
+		if ((pX >= aLeft) && (pX <= aRight) && (pY >= aTop) && (pY <= aBot))
+		{
+			//drone hit the player
+			Sprite_Drone_ScorePlayerHit();
+		}
+	}
+}
+
+
+
+
+//////////////////////////////////////////////////
+//Drone Launch
+//
+void Sprite_Drone_Launch(DroneType_t type)
+{
+	if (!mDrone.life)
+	{
+		if ((type >= DRONE_TYPE_SMALL) && (type <= DRONE_TYPE_LARGE))
+		{
+			mDrone.life = 1;				//no drone
+
+			switch (type)
+			{
+				case DRONE_TYPE_SMALL:
+				{
+					mDrone.x = 10;
+					mDrone.y = 10;
+					mDrone.image = &bmimgDroneSMBmp;
+					mDrone.sizeX = bmimgDroneSMBmp.xSize;
+					mDrone.sizeY = bmimgDroneSMBmp.ySize;
+					mDrone.points = 20;
+					break;
+				}
+
+				case DRONE_TYPE_MEDIUM:
+				{
+					mDrone.x = LCD_WIDTH / 2;
+					mDrone.y = 10;
+					mDrone.image = &bmimgDroneMDBmp;
+					mDrone.sizeX = bmimgDroneMDBmp.xSize;
+					mDrone.sizeY = bmimgDroneMDBmp.ySize;
+					mDrone.points = 50;
+					break;
+				}
+
+				case DRONE_TYPE_LARGE:
+				{
+					mDrone.x = 10;
+					mDrone.y = LCD_HEIGHT / 2;
+					mDrone.image = &bmimgDroneLGBmp;
+					mDrone.sizeX = bmimgDroneLGBmp.xSize;
+					mDrone.sizeY = bmimgDroneLGBmp.ySize;
+					mDrone.points = 100;
+					break;
+				}
+
+				default:
+				{
+					break;
+				}
+			}
+		}
+	}
+}
+
+
+
+
 
 
 /////////////////////////////////////////////
@@ -654,42 +868,73 @@ void Sprite_ClearMissileLaunchFlag(void)
 //reset missile to default values.
 //get the number of astroids remaining and return
 //num remaining
+//
 int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 {
 	Sound_Play_EnemyExplode();
 
 	mGameScore += mAstroid[astroidIndex].points;	//get points if you get hit
 
-	AstroidSize_t size = ASTROID_SIZE_SMALL;
-
 	switch(mAstroid[astroidIndex].size)
 	{
 		case ASTROID_SIZE_SMALL:
-		{
-			break;
-		}
 		case ASTROID_SIZE_MEDIUM:
 		{
+			//remove the astroid
+			mAstroid[astroidIndex].life = 0;
+			mAstroid[astroidIndex].x = 0;
+			mAstroid[astroidIndex].y = 0;
 			break;
 		}
+
+		//breaks into small and medium
 		case ASTROID_SIZE_LARGE:
 		{
+			//convert to medium - no change in trajectory
+			mAstroid[astroidIndex].image = &bmimgAsteroidMDBmp;
+			mAstroid[astroidIndex].size = ASTROID_SIZE_MEDIUM;
+			mAstroid[astroidIndex].sizeX = bmimgAsteroidMDBmp.xSize;
+			mAstroid[astroidIndex].sizeY = bmimgAsteroidMDBmp.ySize;
+
+			//add a small asteroid if there is an empty index
+			int newIndex = Sprite_GetNewAstroidIndex();
+
+
+			if (newIndex >= 0)
+			{
+				mAstroid[newIndex].life = 1;                           //life - 1 = alive, 0 = dead
+				mAstroid[newIndex].image = &bmimgAsteroidSMBmp;        //pointer to image data
+				mAstroid[newIndex].points = 30;                        //points
+				mAstroid[newIndex].x = mAstroid[astroidIndex].x;		//x position
+				mAstroid[newIndex].y = mAstroid[astroidIndex].y;		//y
+				mAstroid[newIndex].sizeX = bmimgAsteroidSMBmp.xSize;    //image width
+				mAstroid[newIndex].sizeY = bmimgAsteroidSMBmp.ySize;	//image height
+				mAstroid[newIndex].bearing = BEARING_10;   				//initial direction
+				mAstroid[newIndex].speed = SPRITE_SPEED_FAST;			//initial speed
+				mAstroid[newIndex].size = ASTROID_SIZE_SMALL;
+
+				//adjust bearing to make it opposite original
+				//if original > =350, make it down
+				if (mAstroid[astroidIndex].bearing >= BEARING_350)
+					mAstroid[newIndex].bearing = BEARING_170;
+			}
+
+			else
+			{
+				//do nothing - the array is full
+			}
+
+
 			break;
 		}
+
 		default:
 		{
 			break;
 		}
-
 	}
 
-
-	//remove astroid and set x and y 0
-	mAstroid[astroidIndex].life = 0;
-	mAstroid[astroidIndex].x = 0;
-	mAstroid[astroidIndex].y = 0;
-
-	//remove the missile
+	//all cases - remove the missile
 	mMissile[missileIndex].life = 0;
 	mMissile[missileIndex].x = 0;
 	mMissile[missileIndex].y = 0;
@@ -700,29 +945,47 @@ int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 }
 
 
+
+////////////////////////////////////////////////////////
+int Sprite_Missile_ScoreDroneHit(uint8_t missileIndex)
+{
+	Sound_Play_EnemyExplode();
+
+	Sprite_Drone_Init();			//reset the drone
+
+	//all cases - remove the missile
+	mMissile[missileIndex].life = 0;
+	mMissile[missileIndex].x = 0;
+	mMissile[missileIndex].y = 0;
+
+	return 0;
+}
+
 //////////////////////////////////////////////////
 //Score - Astroid Hits Player
 //Remove one player life.
-//remove astroid.
+//remove astroid
 //play explosion and image sequence.
 //use dummy delay
 //set game over flag if it's the last player
+//
 int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 {
 	Sound_Play_PlayerExplode();
 
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp1Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp2Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp3Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp4Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp5Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp6Bmp, 1);		//refresh
-	Sprite_DummyDelay(10000);
+	Sprite_DummyDelay(500000);
+
 
 	//remove the astroid
 	mGameScore += mAstroid[astroidIndex].points;		//get points if you get hit
@@ -730,6 +993,7 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 	mAstroid[astroidIndex].x = 0;						//default x
 	mAstroid[astroidIndex].y = 0;						//default y
 	mAstroid[astroidIndex].speed = SPRITE_SPEED_STOP;	//speed
+
 
 	//remove the player
 	mPlayer.numLives--;
@@ -746,6 +1010,54 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 	int rem = Sprite_GetNumAstroid();
 	return rem;
 }
+
+
+
+
+
+///////////////////////////////////////////////////////////
+//Drone hits player
+//blow up the drone and the player at the same time
+//
+int Sprite_Drone_ScorePlayerHit(void)
+{
+	Sound_Play_PlayerExplode();
+
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp1Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp2Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp3Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp4Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp5Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp6Bmp, 1);		//refresh
+	Sprite_DummyDelay(500000);
+
+	//remove the drone
+	mGameScore += mDrone.points;
+
+	Sprite_Drone_Init();				//clear the drone
+
+	//remove the player
+	mPlayer.numLives--;
+
+	//reset the position of the player
+	uint8_t lives = mPlayer.numLives;
+	Sprite_Player_Init();
+	mPlayer.numLives = lives;
+
+	//game over??
+	if (!mPlayer.numLives)
+		mGameOverFlag = 1;
+
+	return 0;
+}
+
+
+
 
 
 
@@ -781,12 +1093,12 @@ int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 		case SPRITE_DIRECTION_45:	dx =  mPlayer.sizeX;				break;
 		case SPRITE_DIRECTION_63:	dx =  mPlayer.sizeX /2 + offset;	break;
 		case SPRITE_DIRECTION_90:	dx =  mPlayer.sizeX /2;				break;
-		case SPRITE_DIRECTION_116:	dx =  mPlayer.sizeX /2;				break;
+		case SPRITE_DIRECTION_116:	dx =  0;							break;
 		case SPRITE_DIRECTION_135:	dx = -1 * (offset / 2);				break;
 		case SPRITE_DIRECTION_153:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_180:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_206:	dx = -1 * offset / 2;				break;
-		case SPRITE_DIRECTION_225:	dx = 0;								break;
+		case SPRITE_DIRECTION_225:	dx = mPlayer.sizeX / 4;				break;
 		case SPRITE_DIRECTION_243:	dx = 0;								break;
 		case SPRITE_DIRECTION_270:	dx = mPlayer.sizeX / 2;				break;
 		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX - (offset / 2);	break;
@@ -832,7 +1144,7 @@ int Sprite_Missile_YOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 		case SPRITE_DIRECTION_153:	dy =   0;							break;
 		case SPRITE_DIRECTION_180:	dy =  mPlayer.sizeY / 2;			break;
 		case SPRITE_DIRECTION_206:	dy = mPlayer.sizeY;					break;
-		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY;					break;
+		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY + (offset / 2);	break;
 		case SPRITE_DIRECTION_243:	dy = mPlayer.sizeY;					break;
 		case SPRITE_DIRECTION_270:	dy = mPlayer.sizeY;					break;
 		case SPRITE_DIRECTION_296:	dy = mPlayer.sizeY;					break;
@@ -898,6 +1210,34 @@ int Sprite_GetRandomAstroid(void)
 
     return -1;
 }
+
+
+
+
+////////////////////////////////////////////////////
+//Returns the index in the array of astroids
+//that is empty.
+int Sprite_GetNewAstroidIndex(void)
+{
+	for (int i = 0 ; i < NUM_ASTROID ; i++)
+	{
+		if (!(mAstroid[i].life))
+			return i;
+	}
+
+	return - 1;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 //////////////////////////////////////////
 //Change the trajectory of a randomly selected
@@ -973,14 +1313,15 @@ void Sprite_UpdateDisplay(void)
 	Sprite_Player_Draw();			//draw player
 	Sprite_Astroid_Draw();			//draw astroids
 	Sprite_Missle_Draw();			//draw missiles
+	Sprite_Drone_Draw();			//draw drone
 
 	LCD_Update(frameBuffer);
 
 	//draw score
 	memset(buffer, 0x00, 40);
-	int n = sprintf((char*)buffer, "S:%04d L:%d P:%d", (int)mGameScore, mGameLevel, mPlayer.numLives);
+	int n = sprintf((char*)buffer, "S:%04d   L:%d  P:%d", (int)mGameScore, mGameLevel, mPlayer.numLives);
 
-	LCD_DrawStringKernLength(0, 3, buffer, n);
+	LCD_DrawStringKernLength(0, 1, buffer, n);
 }
 
 
@@ -1053,6 +1394,18 @@ void Sprite_Missle_Draw(void)
         }
     }
 }
+
+
+/////////////////////////////////////////////////////
+//Draw Drone at x, y, no update
+void Sprite_Drone_Draw(void)
+{
+	if (mDrone.life == 1)
+	{
+    	LCD_DrawIconWrap(mDrone.x, mDrone.y, mDrone.image, 0);
+	}
+}
+
 
 
 ////////////////////////////////////////////
@@ -1550,11 +1903,11 @@ uint8_t Sprite_GetGameOverFlag(void)
 //
 SpriteSpeed_t Sprite_GetGameSpeedFromLevel(void)
 {
-	if(mGameLevel <= 1)
+	if(mGameLevel <= 2)
 		return SPRITE_SPEED_SLOW;
-	else if ((mGameLevel > 1) && (mGameLevel <= 3))
+	else if ((mGameLevel > 2) && (mGameLevel <= 4))
 		return SPRITE_SPEED_MEDIUM;
-	else if (mGameLevel > 3)
+	else if (mGameLevel > 4)
 		return SPRITE_SPEED_FAST;
 	else
 		return SPRITE_SPEED_FAST;

@@ -54,6 +54,9 @@ extern const ImageData bmimgAsteroidSMBmp;
 extern const ImageData bmimgAsteroidMDBmp;
 extern const ImageData bmimgAsteroidLGBmp;
 
+extern const ImageData bmimgDroneSMBmp;
+extern const ImageData bmimgDroneMDBmp;
+extern const ImageData bmimgDroneLGBmp;
 
 
 
