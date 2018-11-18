@@ -59,5 +59,26 @@ extern const ImageData bmimgDroneMDBmp;
 extern const ImageData bmimgDroneLGBmp;
 
 
+extern const ImageData bmimgDroneSMExp1Bmp;
+extern const ImageData bmimgDroneSMExp2Bmp;
+extern const ImageData bmimgDroneSMExp3Bmp;
+extern const ImageData bmimgDroneSMExp4Bmp;
+extern const ImageData bmimgDroneSMExp5Bmp;
+extern const ImageData bmimgDroneSMExp6Bmp;
+
+extern const ImageData bmimgDroneMDExp1Bmp;
+extern const ImageData bmimgDroneMDExp2Bmp;
+extern const ImageData bmimgDroneMDExp3Bmp;
+extern const ImageData bmimgDroneMDExp4Bmp;
+extern const ImageData bmimgDroneMDExp5Bmp;
+extern const ImageData bmimgDroneMDExp6Bmp;
+
+extern const ImageData bmimgDroneLGExp1Bmp;
+extern const ImageData bmimgDroneLGExp2Bmp;
+extern const ImageData bmimgDroneLGExp3Bmp;
+extern const ImageData bmimgDroneLGExp4Bmp;
+extern const ImageData bmimgDroneLGExp5Bmp;
+extern const ImageData bmimgDroneLGExp6Bmp;
+
 
 #endif

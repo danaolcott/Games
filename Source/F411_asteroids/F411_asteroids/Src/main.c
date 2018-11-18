@@ -205,7 +205,7 @@ int main(void)
 		if (!(gCounter % 50))
 		{
 			//random number 0 -2, launch the appropriate drone
-			int result = rand() % 3;
+			volatile int result = rand() % 3;
 			switch (result)
 			{
 				case 0: 	Sprite_Drone_Launch(DRONE_TYPE_SMALL);	break;

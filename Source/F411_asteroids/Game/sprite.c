@@ -34,6 +34,19 @@ static MissileStruct mMissile[NUM_MISSILE];
 static DroneStruct mDrone;
 
 
+//Explosion sequence arrays for bitmap images
+static ImageData* explosion_SMDrone[6] = {  &bmimgDroneSMExp1Bmp, &bmimgDroneSMExp2Bmp,
+											&bmimgDroneSMExp3Bmp, &bmimgDroneSMExp4Bmp,
+											&bmimgDroneSMExp5Bmp, &bmimgDroneSMExp6Bmp };
+
+static ImageData* explosion_MDDrone[6] = {  &bmimgDroneMDExp1Bmp, &bmimgDroneMDExp2Bmp,
+											&bmimgDroneMDExp3Bmp, &bmimgDroneMDExp4Bmp,
+											&bmimgDroneMDExp5Bmp, &bmimgDroneMDExp6Bmp };
+
+static ImageData* explosion_LGDrone[6] = {  &bmimgDroneLGExp1Bmp, &bmimgDroneLGExp2Bmp,
+											&bmimgDroneLGExp3Bmp, &bmimgDroneLGExp4Bmp,
+											&bmimgDroneLGExp5Bmp, &bmimgDroneLGExp6Bmp };
+
 
 //flags - polled in main loop
 static uint8_t mMissileLaunchFlag;			//missile launch
@@ -947,9 +960,29 @@ int Sprite_Missile_ScoreAstroidHit(uint8_t astroidIndex, uint8_t missileIndex)
 
 
 ////////////////////////////////////////////////////////
+//Missile hits drone, play sound and drone explosion
+//
 int Sprite_Missile_ScoreDroneHit(uint8_t missileIndex)
 {
 	Sound_Play_EnemyExplode();
+
+	//array of image data pointers
+	ImageData **ptr = explosion_SMDrone;
+
+	switch(mDrone.type)
+	{
+		case DRONE_TYPE_SMALL:		ptr = explosion_SMDrone;	break;
+		case DRONE_TYPE_MEDIUM:		ptr = explosion_MDDrone;	break;
+		case DRONE_TYPE_LARGE:		ptr = explosion_LGDrone;	break;
+		default:					ptr = explosion_SMDrone;	break;
+	}
+
+	//play sequence
+	for (int i = 0 ; i < 6 ; i++)
+	{
+		LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[i], 1);		//refresh
+		Sprite_DummyDelay(500000);
+	}
 
 	Sprite_Drone_Init();			//reset the drone
 
@@ -1021,19 +1054,37 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 //
 int Sprite_Drone_ScorePlayerHit(void)
 {
+	//array of image data pointers
+	ImageData **ptr = explosion_SMDrone;
+
+	switch(mDrone.type)
+	{
+		case DRONE_TYPE_SMALL:		ptr = explosion_SMDrone;	break;
+		case DRONE_TYPE_MEDIUM:		ptr = explosion_MDDrone;	break;
+		case DRONE_TYPE_LARGE:		ptr = explosion_LGDrone;	break;
+		default:					ptr = explosion_SMDrone;	break;
+	}
+
+
 	Sound_Play_PlayerExplode();
 
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp1Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[0], 1);						//refresh
 	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp2Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[1], 1);						//refresh
 	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp3Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[2], 1);						//refresh
 	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp4Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[3], 1);						//refresh
 	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp5Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[4], 1);						//refresh
 	Sprite_DummyDelay(500000);
 	LCD_DrawIconWrap(mPlayer.x, mPlayer.y, &bmimgPlayerExp6Bmp, 1);		//refresh
+	LCD_DrawIconWrap(mDrone.x, mDrone.y, ptr[5], 1);						//refresh
 	Sprite_DummyDelay(500000);
 
 	//remove the drone
