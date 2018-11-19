@@ -284,5 +284,8 @@ void Sprite_SetGameOverFlag(void);
 uint8_t Sprite_GetGameOverFlag(void);
 
 SpriteSpeed_t Sprite_GetGameSpeedFromLevel(void);
+uint32_t Sprite_GetGameScore(void);
+uint8_t Sprite_GetGameLevel(void);
+
 
 #endif

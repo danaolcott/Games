@@ -35,15 +35,15 @@ static DroneStruct mDrone;
 
 
 //Explosion sequence arrays for bitmap images
-static ImageData* explosion_SMDrone[6] = {  &bmimgDroneSMExp1Bmp, &bmimgDroneSMExp2Bmp,
+static const ImageData* explosion_SMDrone[6] = {  &bmimgDroneSMExp1Bmp, &bmimgDroneSMExp2Bmp,
 											&bmimgDroneSMExp3Bmp, &bmimgDroneSMExp4Bmp,
 											&bmimgDroneSMExp5Bmp, &bmimgDroneSMExp6Bmp };
 
-static ImageData* explosion_MDDrone[6] = {  &bmimgDroneMDExp1Bmp, &bmimgDroneMDExp2Bmp,
+static const ImageData* explosion_MDDrone[6] = {  &bmimgDroneMDExp1Bmp, &bmimgDroneMDExp2Bmp,
 											&bmimgDroneMDExp3Bmp, &bmimgDroneMDExp4Bmp,
 											&bmimgDroneMDExp5Bmp, &bmimgDroneMDExp6Bmp };
 
-static ImageData* explosion_LGDrone[6] = {  &bmimgDroneLGExp1Bmp, &bmimgDroneLGExp2Bmp,
+static const ImageData* explosion_LGDrone[6] = {  &bmimgDroneLGExp1Bmp, &bmimgDroneLGExp2Bmp,
 											&bmimgDroneLGExp3Bmp, &bmimgDroneLGExp4Bmp,
 											&bmimgDroneLGExp5Bmp, &bmimgDroneLGExp6Bmp };
 
@@ -89,7 +89,7 @@ void Sprite_Init(void)
     mGameScore = 0x00;
     mGameLevel = 1;
 
-    mGameOverFlag = 0x00;
+//    mGameOverFlag = 0x00;
 
     Sprite_Player_Init();				//init sprites
     Sprite_Astroid_Init(SPRITE_SPEED_MEDIUM);
@@ -967,7 +967,7 @@ int Sprite_Missile_ScoreDroneHit(uint8_t missileIndex)
 	Sound_Play_EnemyExplode();
 
 	//array of image data pointers
-	ImageData **ptr = explosion_SMDrone;
+	const ImageData **ptr = explosion_SMDrone;
 
 	switch(mDrone.type)
 	{
@@ -1055,7 +1055,7 @@ int Sprite_Astroid_ScorePlayerHit(uint8_t astroidIndex)
 int Sprite_Drone_ScorePlayerHit(void)
 {
 	//array of image data pointers
-	ImageData **ptr = explosion_SMDrone;
+	const ImageData **ptr = explosion_SMDrone;
 
 	switch(mDrone.type)
 	{
@@ -1149,7 +1149,7 @@ int Sprite_Missile_XOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 		case SPRITE_DIRECTION_153:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_180:	dx = -1 * offset / 2;				break;
 		case SPRITE_DIRECTION_206:	dx = -1 * offset / 2;				break;
-		case SPRITE_DIRECTION_225:	dx = mPlayer.sizeX / 4;				break;
+		case SPRITE_DIRECTION_225:	dx = 0;								break;
 		case SPRITE_DIRECTION_243:	dx = 0;								break;
 		case SPRITE_DIRECTION_270:	dx = mPlayer.sizeX / 2;				break;
 		case SPRITE_DIRECTION_296:	dx = mPlayer.sizeX - (offset / 2);	break;
@@ -1195,7 +1195,7 @@ int Sprite_Missile_YOffsetFromPlayerRotation(SpriteDirection_t rotation, SpriteS
 		case SPRITE_DIRECTION_153:	dy =   0;							break;
 		case SPRITE_DIRECTION_180:	dy =  mPlayer.sizeY / 2;			break;
 		case SPRITE_DIRECTION_206:	dy = mPlayer.sizeY;					break;
-		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY + (offset / 2);	break;
+		case SPRITE_DIRECTION_225:	dy = mPlayer.sizeY + (offset / 4);	break;
 		case SPRITE_DIRECTION_243:	dy = mPlayer.sizeY;					break;
 		case SPRITE_DIRECTION_270:	dy = mPlayer.sizeY;					break;
 		case SPRITE_DIRECTION_296:	dy = mPlayer.sizeY;					break;
@@ -1965,7 +1965,16 @@ SpriteSpeed_t Sprite_GetGameSpeedFromLevel(void)
 }
 
 
+uint32_t Sprite_GetGameScore(void)
+{
+	return mGameScore;
+
+}
 
 
+uint8_t Sprite_GetGameLevel(void)
+{
+	return mGameLevel;
+}
 
 

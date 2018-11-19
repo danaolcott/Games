@@ -30,7 +30,7 @@
 
 #define SCORE_PLAYER_NAME_SIZE				16
 #define SCORE_PLAYER_NAME_ADDRESS			0x20
-#define SCORE_PLAYER_NAME					(const char*)("Elizabeth")
+#define SCORE_PLAYER_NAME					(const char*)("Rebecca")
 
 int Score_Init(void);
 

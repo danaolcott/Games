@@ -121,8 +121,17 @@ int main(void)
 	Sprite_Init();					//game init
 	LCD_BacklightOn();				//backlight
 
-	//wait a bit
-	HAL_Delay(100);
+	HAL_Delay(100);					//wait a bit
+
+	EEPROM_init();					//simple read/write check
+
+	/////////////////////////////////////////////////
+	//Clear high score. comment out if not needed
+//		int result = Score_Init();
+//		if (result < 0)
+//			while (1){};
+	//////////////////////////////////////////////////
+
 
 	Sprite_SetGameOverFlag();		//start with game over
 
@@ -137,21 +146,63 @@ int main(void)
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+		if (Sprite_GetGameOverFlag() == 1)
+		{
+			Sound_Play_GameOver();
+
+			//evaluate the high score and current score
+			if (Sprite_GetGameScore() > Score_GetHighScore())
+			{
+				while(Sprite_GetGameOverFlag() == 1)
+				{
+					Score_DisplayNewHighScore(Sprite_GetGameScore(), Sprite_GetGameLevel());
+					HAL_Delay(1000);
+					LCD_Clear(0x00);
+					HAL_Delay(1000);
+				}
+
+				//update the high score and level here
+				Score_SetHighScore(Sprite_GetGameScore());
+				Score_SetMaxLevel(Sprite_GetGameLevel());
+
+				Sprite_SetGameOverFlag();
+			}
+
+			HAL_Delay(2000);
+		}
+
 
 		///////////////////////////////////////////////////
 		//Button press while game over flag is set
 		//will clear the game over flag, otherwise, it fires
 		while (Sprite_GetGameOverFlag() == 1)
 		{
+			uint8_t buffer[SCORE_PLAYER_NAME_SIZE] = {0x00};
+			uint8_t buffer2[16] = {0x00};
+			uint16_t highScore = Score_GetHighScore();
+			uint8_t level = Score_GetMaxLevel();
+			uint8_t len = Score_GetPlayerName(buffer);
+
+			LCD_DrawStringKernLength(1, 3, buffer, len);
+
+			int n = sprintf((char*)buffer2, "Score:%d", highScore);
+			LCD_DrawStringKernLength(2, 3, buffer2, n);
+
+			n = sprintf((char*)buffer2, "Level:%d", level);
+			LCD_DrawStringKernLength(3, 3, buffer2, n);
+
 			LCD_DrawStringKern(5, 3, " Press Button");
+
 			HAL_Delay(1000);
 			LCD_Clear(0x00);
 			HAL_Delay(1000);
+
+			Sprite_Init();                  //reset and clear all flags
 		}
 
 
 		///////////////////////////////////////////
-		//launch any new missiles from player?
+		//launch any new missiles from player? - flag set in the button isr
 		if (Sprite_GetMissileLaunchFlag() == 1)
 		{
 			Sprite_ClearMissileLaunchFlag();
@@ -166,39 +217,13 @@ int main(void)
 
 		switch(pos)
 		{
-			case JOYSTICK_UP:
-			{
-				Sprite_PlayerFireThruster();
-				break;
-			}
-			case JOYSTICK_DOWN:
-			{
-				Sprite_PlayerFlipRotation();
-				break;
-			}
-			case JOYSTICK_LEFT:
-			{
-				Sprite_PlayerRotateCCW();
-				break;
-			}
-			case JOYSTICK_RIGHT:
-			{
-				Sprite_PlayerRotateCW();
-				break;
-			}
-			case JOYSTICK_PRESS:
-			{
-				break;
-			}
-			case JOYSTICK_NONE:
-			{
-				break;
-			}
-
-			default:
-			{
-
-			}
+			case JOYSTICK_UP:		Sprite_PlayerFireThruster();		break;
+			case JOYSTICK_DOWN: 	Sprite_PlayerFlipRotation();		break;
+			case JOYSTICK_LEFT:		Sprite_PlayerRotateCCW();			break;
+			case JOYSTICK_RIGHT:	Sprite_PlayerRotateCW();			break;
+			case JOYSTICK_PRESS:										break;
+			case JOYSTICK_NONE:											break;
+			default:													break;
 		}
 
 		//launch a drone ever 50 game loops
@@ -208,10 +233,10 @@ int main(void)
 			volatile int result = rand() % 3;
 			switch (result)
 			{
-				case 0: 	Sprite_Drone_Launch(DRONE_TYPE_SMALL);	break;
-				case 1: 	Sprite_Drone_Launch(DRONE_TYPE_MEDIUM);	break;
-				case 2: 	Sprite_Drone_Launch(DRONE_TYPE_LARGE);	break;
-				default:	Sprite_Drone_Launch(DRONE_TYPE_SMALL);	break;
+				case 0: 	Sprite_Drone_Launch(DRONE_TYPE_SMALL);		break;
+				case 1: 	Sprite_Drone_Launch(DRONE_TYPE_MEDIUM);		break;
+				case 2: 	Sprite_Drone_Launch(DRONE_TYPE_LARGE);		break;
+				default:	Sprite_Drone_Launch(DRONE_TYPE_SMALL);		break;
 			}
 		}
 
